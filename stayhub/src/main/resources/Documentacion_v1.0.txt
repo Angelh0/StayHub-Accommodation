@@ -1,0 +1,131 @@
+💡 1. DTOs
+
+🔹 AccommodationDTO
+
+Descripción: Devuelve información completa de un alojamiento, incluyendo listado de habitaciones.
+
+Uso: Consultas por UUID (GET /accommodations/{uuid}).
+
+Campos: UUID, name, type, description, city, country, availability, priceMax, priceMin, rooms (RoomDTO).
+
+⚠️ Notas: availability, priceMax, priceMin y rooms dependen del estado de las habitaciones asociadas.
+
+🔹 RequestAccommodationDTO
+
+Descripción: DTO de entrada para crear o modificar un alojamiento.
+
+Campos: UUID, name, type, description, city, country.
+
+Uso: POST /create y PUT /modified/{uuid}.
+
+🔹 ResponseAccommodationDTO
+
+Descripción: DTO de salida para listados sin incluir habitaciones.
+
+Campos: Igual que AccommodationDTO pero sin rooms.
+
+🔹 RoomDTO
+
+Campos: UUID, city, room, capacity, beds, type, price, areaInSquareMeters, status.
+
+⚠️ Notas: city se hereda del alojamiento; enums convertidos a String en DB.
+
+💡 2. Converters
+
+🔹 ResponseToDTO: Entidad → ResponseAccommodationDTO (sin habitaciones)
+🔹 ToDTOWithRooms: Entidad → AccommodationDTO (con habitaciones)
+🔹 RequestAccommodationConverter: RequestAccommodationDTO ↔ Entity
+🔹 RoomConverter: RoomDTO ↔ Entity
+
+💡 3. Entities
+
+🔹 AccommodationEntity
+
+ID interno: Long, @GeneratedValue(strategy=GenerationType.IDENTITY)
+
+UUID externo: generado con IDGenerator
+
+Relación OneToMany con RoomEntity (cascade=ALL, orphanRemoval=true, fetch=EAGER)
+
+Enums convertidos a String en DB
+
+🔹 RoomEntity
+
+ID interno y UUID igual que AccommodationEntity
+
+ManyToOne con AccommodationEntity (fetch=EAGER)
+
+Enums (type y status) convertidos a String
+
+💡 4. Enums
+
+🔹 AccommodationType: HOTEL, APARTMENT, HOSTEL
+🔹 RoomType: SINGLE, DOUBLE, SUITE, STUDIO
+🔹 StatusType: AVAILABLE, DISABLED
+
+💡 5. Repositories
+
+🔹 AccommodationRepository
+
+Extiende JpaRepository<AccommodationEntity, Long>
+
+Métodos personalizados: findByUuid, findByCity, findByUUID, deleteByUUID
+
+🔹 RoomRepository
+
+Extiende JpaRepository<RoomEntity, Long>
+
+Actualmente sin métodos personalizados
+
+💡 6. Services
+
+🔹 AccommodationService: create, getAll, modify, getById, delete, getByCity
+🔹 RoomService: createRoom, getAllRooms
+🔹 BusinessService: updateValues
+
+⚠️ Calcula availability, priceMax y priceMin basado en habitaciones con status = Available
+
+💡 7. Controllers
+
+🔹 AccommodationController (público)
+➡️ POST /api/v1/create → CreateAccommodation
+
+Entrada: RequestAccommodationDTO
+
+Salida: Devuelve DTO mismo
+➡️ PUT /api/v1/modified/{uuid} → ModifiedAccommodation
+
+Entrada: RequestAccommodationDTO + UUID
+
+Salida: AccommodationDTO con availability, priceMax, priceMin
+⚠️ City actualiza automáticamente habitaciones existentes
+➡️ GET /api/v1/getAccommodation/{uuid} → GetAccommodationById
+
+Salida: AccommodationDTO con rooms
+
+🔹 AdminAccommodationController
+➡️ GET /admin/getAccommodation → GetAllAccommodations
+➡️ DELETE /admin/deleteAccommodation/{uuid} → DeleteAccommodation
+➡️ GET /admin/getAccommodation/search/city?city={city} → GetAccommodationByCity
+
+🔹 AdminRoomController
+➡️ GET /admin/getAllRooms → GetAllRooms (RoomDTO, actualmente falla si no hay habitaciones)
+
+🔹 RoomController
+➡️ POST /{uuid}/createRoom → CreateRoom
+
+💡 8. Reglas de negocio
+
+⚠️ Disponibilidad: Solo habitaciones Available
+
+⚠️ Precios máximo y mínimo dependen de habitaciones asociadas
+
+⚠️ Listado habitaciones: Actualmente devuelve todas; futura mejora filtrará solo disponibles
+
+💡 9. Utils
+
+🔹 IDGenerator:
+
+Genera UUIDs de 6 caracteres alfanuméricos
+
+36 posibles caracteres → ~2.176 millones combinaciones
