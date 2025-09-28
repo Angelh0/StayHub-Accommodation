@@ -22,10 +22,8 @@ public class GrpcRoomServiceImpl extends RoomServiceGrpc.RoomServiceImplBase {
     public void getInfoRoom(ReservationRequest request, StreamObserver<RoomResponse> responseObserver) {
         String uuidString = request.getUuidRoom();
 
-        // Obtenemos info del room
         RoomDTO room = roomService.getRooms(java.util.UUID.fromString(uuidString));
 
-        // Construimos response
         RoomResponse objectRoom = RoomResponse.newBuilder()
                 .setUuidRoom(room.getUuid().toString())
                 .setPrice(room.getPrice())

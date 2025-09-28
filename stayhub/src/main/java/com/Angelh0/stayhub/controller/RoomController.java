@@ -60,8 +60,8 @@ public class RoomController {
             @PathVariable String city,
             @PathVariable int room,
             @PathVariable int capacity,
-            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkIn,
-            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkOut) {
+            @PathVariable @DateTimeFormat(pattern = "d-M-yyyy") LocalDate checkIn,
+            @PathVariable @DateTimeFormat(pattern = "d-M-yyyy") LocalDate checkOut) {
 
         SearchRoomDTO searchRoomDTO = new SearchRoomDTO();
         searchRoomDTO.setCheckIn(checkIn);
