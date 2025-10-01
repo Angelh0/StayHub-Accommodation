@@ -11,9 +11,10 @@ import java.util.UUID;
 @Setter
 public class SearchRoomDTO {
 
-
     private UUID uuidRoom;
+
     private UUID searchUuid;
+
     private String city;
 
     @JsonFormat(pattern="d/M/yyyy")
@@ -23,6 +24,8 @@ public class SearchRoomDTO {
     private LocalDate checkOut;
 
     private int room;
+
     private int capacity;
+
     private boolean available;
 }

@@ -16,6 +16,8 @@ public class SearchRoomEntity {
     @Id
     private int id = 1;
 
+    private UUID uuidRoom;
+
     @Column(nullable = false)
     private UUID searchUuid;
 

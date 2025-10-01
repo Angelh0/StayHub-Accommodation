@@ -10,6 +10,7 @@ public class SearchConverter {
     public SearchRoomEntity convertToEntity(SearchRoomDTO searchRoomDTO) {
         SearchRoomEntity searchRoomEntity = new SearchRoomEntity();
         searchRoomEntity.setSearchUuid(searchRoomDTO.getSearchUuid());
+        searchRoomEntity.setSearchUuid(searchRoomDTO.getSearchUuid());
         searchRoomEntity.setCity(searchRoomDTO.getCity());
         searchRoomEntity.setRoom(searchRoomDTO.getRoom());
         searchRoomEntity.setCapacity(searchRoomDTO.getCapacity());
@@ -21,6 +22,7 @@ public class SearchConverter {
 
     public SearchRoomDTO convertToDTO(SearchRoomEntity searchRoomEntity) {
         SearchRoomDTO searchRoomDTO = new SearchRoomDTO();
+        searchRoomDTO.setUuidRoom(searchRoomEntity.getUuidRoom());
         searchRoomDTO.setSearchUuid(searchRoomEntity.getSearchUuid());
         searchRoomDTO.setCity(searchRoomEntity.getCity());
         searchRoomDTO.setRoom(searchRoomEntity.getRoom());
