@@ -1,5 +1,6 @@
 package com.Angelh0.stayhub.controller;
 
+import com.Angelh0.stayhub.dto.ResponseAccommodationDTO;
 import com.Angelh0.stayhub.dto.RoomDTO;
 import com.Angelh0.stayhub.dto.SearchRoomDTO;
 import com.Angelh0.stayhub.service.RoomService;
@@ -56,7 +57,7 @@ public class RoomController {
     }
 
     @GetMapping("/getAdvanceRoom/search/{city}/room/{room}/capacity/{capacity}/checkIn/{checkIn}/checkOut/{checkOut}")
-    public ResponseEntity<List<RoomDTO>> searchAdvanced(
+    public ResponseEntity<List<ResponseAccommodationDTO>> searchAdvanced(
             @PathVariable String city,
             @PathVariable int room,
             @PathVariable int capacity,
@@ -67,7 +68,7 @@ public class RoomController {
         searchRoomDTO.setCheckIn(checkIn);
         searchRoomDTO.setCheckOut(checkOut);
 
-        List<RoomDTO> dtoList = searchService.searchAdvanced(searchRoomDTO, city, room, capacity, checkIn, checkOut);
+        List<ResponseAccommodationDTO> dtoList = searchService.searchAdvanced(searchRoomDTO, city, room, capacity, checkIn, checkOut);
 
         return ResponseEntity.ok(dtoList);
     }
