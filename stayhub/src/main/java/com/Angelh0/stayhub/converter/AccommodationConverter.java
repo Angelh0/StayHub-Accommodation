@@ -83,4 +83,19 @@ public class AccommodationConverter {
 
         return accommodationEntity;
     }
+
+    public AccommodationEntity responseToEntity (ResponseAccommodationDTO responseAccommodationDTO) {
+        AccommodationEntity accommodationEntity = new AccommodationEntity();
+        accommodationEntity.setUuid(responseAccommodationDTO.getUuid());
+        accommodationEntity.setName(responseAccommodationDTO.getName());
+        accommodationEntity.setType(responseAccommodationDTO.getType());
+        accommodationEntity.setDescription(responseAccommodationDTO.getDescription());
+        accommodationEntity.setCity(responseAccommodationDTO.getCity());
+        accommodationEntity.setCountry(responseAccommodationDTO.getCountry());
+        accommodationEntity.setAvailability(responseAccommodationDTO.getAvailability());
+        accommodationEntity.setPriceMax(responseAccommodationDTO.getPriceMax());
+        accommodationEntity.setPriceMin(responseAccommodationDTO.getPriceMin());
+
+        return accommodationEntity;
+    }
 }

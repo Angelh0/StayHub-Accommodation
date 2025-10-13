@@ -3,10 +3,7 @@ package com.Angelh0.stayhub.service.impl;
 import com.Angelh0.stayhub.converter.AccommodationConverter;
 import com.Angelh0.stayhub.converter.RoomConverter;
 import com.Angelh0.stayhub.converter.SearchConverter;
-import com.Angelh0.stayhub.dto.ResponseAccommodationDTO;
-import com.Angelh0.stayhub.dto.RoomAvailabilityDTO;
-import com.Angelh0.stayhub.dto.RoomDTO;
-import com.Angelh0.stayhub.dto.SearchRoomDTO;
+import com.Angelh0.stayhub.dto.*;
 import com.Angelh0.stayhub.entity.AccommodationEntity;
 import com.Angelh0.stayhub.entity.RoomEntity;
 import com.Angelh0.stayhub.entity.SearchRoomEntity;
@@ -15,6 +12,7 @@ import com.Angelh0.stayhub.exception.DateValidate;
 import com.Angelh0.stayhub.grpcClient.GrpcClientGetAvailability;
 import com.Angelh0.stayhub.repository.RoomRepository;
 import com.Angelh0.stayhub.repository.SearchRoomRepository;
+import com.Angelh0.stayhub.service.BusinessService;
 import com.Angelh0.stayhub.service.SearchService;
 import com.checkAvailability.grpc.AvailabilityRequest;
 import com.checkAvailability.grpc.AvailabilityResponse;
@@ -38,85 +36,41 @@ public class SearchServiceImpl implements SearchService {
     private final RoomConverter roomConverter;
     private final GrpcClientGetAvailability availabilityGrpcClient;
     private final AccommodationConverter accommodationConverter;
+    private final BusinessService businessService;
 
 
     public SearchServiceImpl(SearchRoomRepository searchRoomRepository,
                              SearchConverter searchConverter,
                              RoomRepository roomRepository,
-                             RoomConverter roomConverter, GrpcClientGetAvailability availabilityGrpcClient, AccommodationConverter accommodationConverter) {
+                             RoomConverter roomConverter, GrpcClientGetAvailability availabilityGrpcClient, AccommodationConverter accommodationConverter, BusinessService businessService) {
         this.searchRoomRepository = searchRoomRepository;
         this.searchConverter = searchConverter;
         this.roomRepository = roomRepository;
         this.roomConverter = roomConverter;
         this.availabilityGrpcClient = availabilityGrpcClient;
         this.accommodationConverter = accommodationConverter;
+        this.businessService = businessService;
     }
 
 
     @Override
     public List<ResponseAccommodationDTO> searchAdvanced(SearchRoomDTO searchRoomDTO, String city, int room, int capacity, LocalDate checkIn, LocalDate checkOut) {
 
-        DateValidate.validateCheckIn(checkIn, checkOut); //Comprobacion de fechas
+        DateValidate.validateCheckIn(checkIn, checkOut); //Comprobación de fechas
+        saveSearch(searchRoomDTO, city, room, capacity, checkIn, checkOut); //Guardar última búsqueda
 
-        saveSearch(searchRoomDTO, city, room, capacity, checkIn, checkOut); //Guardado de ultima busqueda
-
-        //Primer filtrado (city, room, capacity)
-        List<RoomDTO> dto = new ArrayList<>();
-
+        // Primer filtrado
         List<RoomEntity> roomEntities = roomRepository.findByAccommodation_CityAndRoomAndCapacity(city, room, capacity);
+        List<String> uuidList = businessService.filterRoomAvailable(roomEntities);
 
-        for (RoomEntity roomEntity : roomEntities) {
-            dto.add(roomConverter.convertEntityToDTO(roomEntity));
-        }
+        // Segundo filtrado (disponibilidad)
+        List<RoomEntity> availableRooms = businessService.filterCheckAvailability(uuidList, roomEntities, checkIn, checkOut);
 
-        //Obtencion de UUIDRoom obtenidas en primer filtrado
-        List<String> uuidList = new ArrayList<>();
-        for (RoomDTO roomDTO : dto) {
-            uuidList.add(roomDTO.getUuid().toString());
-        }
-
-        //Segundo filtrado (CheckIn - CheckOut)
-        List<RoomAvailabilityDTO> availabilityList = availabilityGrpcClient.getAvailability(
-                uuidList,
-                checkIn.toString(),
-                checkOut.toString()
-        );
-
-        List<RoomEntity> available = new ArrayList<>();
-
-
-        for (RoomAvailabilityDTO roomAvailability : availabilityList) {
-            if (roomAvailability.isAvailable()) {
-                for (RoomEntity roomEntity : roomEntities) {
-                    if (roomEntity.getUuid().equals(roomAvailability.getUuidRoom())) {
-                        available.add(roomEntity);
-                        break;
-                    }
-                }
-            }
-        }
-
-        List<ResponseAccommodationDTO> accommodation = new ArrayList<>();
-
-        for (RoomEntity roomEntity : available) {
-            AccommodationEntity accommodationEntity = roomEntity.getAccommodation();
-            if (accommodationEntity != null) {
-                boolean duplicate = false;
-                for (ResponseAccommodationDTO exist : accommodation) {
-                    if (exist.getUuid().equals(accommodationEntity.getUuid())) {
-                        duplicate = true;
-                        break;
-                    }
-                }
-                if (!duplicate) {
-                    ResponseAccommodationDTO response = accommodationConverter.responseToDTO(accommodationEntity);
-                    accommodation.add(response);
-                }
-            }
-        }
-
-        return accommodation;
+        // Filtrado final (DTOs de alojamiento sin duplicados)
+        return businessService.filterAccommodation(availableRooms);
     }
+
+
 
     public void saveSearch(SearchRoomDTO searchRoomDTO, String city, int room, int capacity, LocalDate checkIn, LocalDate checkOut) {
         SearchRoomEntity searchRoomEntity = new SearchRoomEntity();

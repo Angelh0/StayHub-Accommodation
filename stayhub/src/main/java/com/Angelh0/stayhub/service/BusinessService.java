@@ -3,7 +3,16 @@ package com.Angelh0.stayhub.service;
 import com.Angelh0.stayhub.dto.ResponseAccommodationDTO;
 import com.Angelh0.stayhub.entity.AccommodationEntity;
 import com.Angelh0.stayhub.entity.RoomEntity;
+import com.Angelh0.stayhub.entity.SearchRoomEntity;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
 
 public interface BusinessService {
     AccommodationEntity updateValues(AccommodationEntity accommodationEntity);
+    AccommodationEntity updateAccommodationValues(AccommodationEntity accommodationEntity, List<ResponseAccommodationDTO> accommodation, List<RoomEntity> available);
+    List<String> filterRoomAvailable(List<RoomEntity> roomEntities);
+    List<RoomEntity> filterCheckAvailability(List<String> uuidList, List<RoomEntity> roomEntities, LocalDate checkIn, LocalDate checkOut);
+    List<ResponseAccommodationDTO> filterAccommodation(List<RoomEntity> available);
 }
