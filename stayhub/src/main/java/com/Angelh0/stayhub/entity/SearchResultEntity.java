@@ -11,7 +11,7 @@ import java.util.UUID;
 @Table(name="SEARCH_RESULT_TABLE")
 @Getter
 @Setter
-public class SearchResult {
+public class SearchResultEntity {
 
     @Id
     private int id = 1;
@@ -20,10 +20,12 @@ public class SearchResult {
     private UUID uuidSearch;
 
     @OneToMany
-    List<AccommodationEntity> accommodation;
+    @JoinColumn(name = "search_result_id")
+    private List<AccommodationEntity> accommodation;
 
     @OneToMany
-    List<RoomEntity> rooms;
+    @JoinColumn(name = "search_result_id")
+    private List<RoomEntity> rooms;
 
     @PrePersist
     public void generatedUuid() {

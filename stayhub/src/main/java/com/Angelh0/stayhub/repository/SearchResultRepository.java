@@ -1,7 +1,10 @@
 package com.Angelh0.stayhub.repository;
 
-import com.Angelh0.stayhub.entity.SearchResult;
+import com.Angelh0.stayhub.entity.SearchResultEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface SearchResultRepository extends JpaRepository<SearchResult, Integer> {
+import java.util.Optional;
+
+public interface SearchResultRepository extends JpaRepository<SearchResultEntity, Integer> {
+    Optional<SearchResultEntity> findById(Integer integer);
 }

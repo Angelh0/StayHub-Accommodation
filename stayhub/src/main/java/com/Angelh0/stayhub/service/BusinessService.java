@@ -11,7 +11,7 @@ import java.util.UUID;
 
 public interface BusinessService {
     AccommodationEntity updateValues(AccommodationEntity accommodationEntity);
-    AccommodationEntity updateAccommodationValues(AccommodationEntity accommodationEntity, List<ResponseAccommodationDTO> accommodation, List<RoomEntity> available);
+    void updateAccommodationValues();
     List<String> filterRoomAvailable(List<RoomEntity> roomEntities);
     List<RoomEntity> filterCheckAvailability(List<String> uuidList, List<RoomEntity> roomEntities, LocalDate checkIn, LocalDate checkOut);
     List<ResponseAccommodationDTO> filterAccommodation(List<RoomEntity> available);

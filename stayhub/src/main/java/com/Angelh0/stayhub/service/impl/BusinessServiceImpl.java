@@ -5,12 +5,16 @@ import com.Angelh0.stayhub.dto.ResponseAccommodationDTO;
 import com.Angelh0.stayhub.dto.RoomAvailabilityDTO;
 import com.Angelh0.stayhub.entity.AccommodationEntity;
 import com.Angelh0.stayhub.entity.RoomEntity;
-import com.Angelh0.stayhub.entity.SearchResult;
+import com.Angelh0.stayhub.entity.SearchResultEntity;
+import com.Angelh0.stayhub.entity.SearchRoomEntity;
 import com.Angelh0.stayhub.enums.StatusType;
 import com.Angelh0.stayhub.grpcClient.GrpcClientGetAvailability;
 import com.Angelh0.stayhub.repository.AccommodationRepository;
 import com.Angelh0.stayhub.repository.SearchResultRepository;
 import com.Angelh0.stayhub.service.BusinessService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -20,6 +24,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@Transactional
 public class BusinessServiceImpl implements BusinessService {
 
     private final GrpcClientGetAvailability availabilityGrpcClient;
@@ -67,29 +72,26 @@ public class BusinessServiceImpl implements BusinessService {
     }
 
     public List<ResponseAccommodationDTO> filterAccommodation(List<RoomEntity> available) {
+
+        saveSearchResult(available);
+        updateAccommodationValues();
+
         List<ResponseAccommodationDTO> accommodation = new ArrayList<>();
+        List<AccommodationEntity> accommodationEntities = accommodationRepository.findAll();
 
-        for (RoomEntity roomEntity : available) {
-            AccommodationEntity accommodationEntity = roomEntity.getAccommodation();
+        for (AccommodationEntity accommodationEntity : accommodationEntities) {
+            boolean find = false;
 
-            if (accommodationEntity != null) {
-                boolean duplicate = false;
-
-                for (ResponseAccommodationDTO exist : accommodation) {
-                    if (exist.getUuid().equals(accommodationEntity.getUuid())) {
-                        duplicate = true;
-                        break;
-                    }
-                }
-
-                if (!duplicate) {
-                    ResponseAccommodationDTO response = accommodationConverter.responseToDTO(accommodationEntity);
-                    accommodation.add(response);
-                }
+           for (RoomEntity room : available) {
+               if (room.getAccommodation().getUuid().equals(accommodationEntity.getUuid())) {
+                   find = true;
+                   break;
+               }
             }
+           if (find) {
+               accommodation.add(accommodationConverter.responseToDTO(accommodationEntity));
+           }
         }
-
-        saveSearchResult(available, accommodation);
 
         return accommodation;
     }
@@ -126,8 +128,8 @@ public class BusinessServiceImpl implements BusinessService {
         return accommodationEntity;
     }
 
-    public void saveSearchResult(List<RoomEntity> availableRooms, List<ResponseAccommodationDTO> accommodationDTOs) {
-        SearchResult searchResult = new SearchResult();
+    public void saveSearchResult(List<RoomEntity> availableRooms) {
+        SearchResultEntity searchResultEntity = new SearchResultEntity();
 
         List<RoomEntity> room = new ArrayList<>();
 
@@ -137,27 +139,65 @@ public class BusinessServiceImpl implements BusinessService {
 
         List<AccommodationEntity> accommodation = new ArrayList<>();
 
-        for (ResponseAccommodationDTO responseAccommodationDTO : accommodationDTOs) {
-            UUID accommodationUuid = responseAccommodationDTO.getUuid();
-            List<AccommodationEntity> accommodationEntities = accommodationRepository.uuid(accommodationUuid);
+        for (RoomEntity roomEntity : availableRooms) {
+            AccommodationEntity accommodationEntity = roomEntity.getAccommodation();
 
-            accommodation.addAll(accommodationEntities);
+            boolean exist = false;
+
+            for (AccommodationEntity accommodationEntities : accommodation) {
+                if (accommodationEntities.getUuid().equals(accommodationEntity.getUuid())) {
+                    exist = true;
+                    break;
+                }
+            }
+            if (!exist) {
+                accommodation.add(accommodationEntity);
+            }
         }
 
         searchResultRepository.deleteAll();
 
-        searchResult.setRooms(room);
-        searchResult.setAccommodation(accommodation);
+        searchResultEntity.setRooms(room);
+        searchResultEntity.setAccommodation(accommodation);
 
-        System.out.println(searchResult);
-
-        searchResultRepository.save(searchResult);
+        searchResultRepository.save(searchResultEntity);
+        searchResultRepository.flush();
     }
 
 
-
     @Override
-    public AccommodationEntity updateAccommodationValues(AccommodationEntity accommodationEntity, List<ResponseAccommodationDTO> accommodation, List<RoomEntity> available) {
-        return null;
+    public void updateAccommodationValues() {
+
+        Double priceMax = null;
+        Double priceMin = null;
+
+        Optional<SearchResultEntity> search = searchResultRepository.findById(1);
+
+        if (search.isPresent()) {
+
+            List<RoomEntity> availableRooms = search.get().getRooms();
+
+            for (AccommodationEntity accommodation : search.get().getAccommodation()) {
+                int available = 0;
+
+                for (RoomEntity room : availableRooms) {
+                    if (room.getAccommodation().getUuid().equals(accommodation.getUuid())) {
+                        available++;
+
+                        if (priceMax == null || room.getPrice() > priceMax  ) {
+                            priceMax = room.getPrice();
+                        }
+                        if (priceMin == null || room.getPrice() < priceMin) {
+                            priceMin = room.getPrice();
+                        }
+                    }
+                }
+
+                accommodation.setPriceMax(priceMax);
+                accommodation.setPriceMin(priceMin);
+                accommodation.setAvailability(available);
+                accommodationRepository.saveAndFlush(accommodation);
+            }
+        }
     }
 }
