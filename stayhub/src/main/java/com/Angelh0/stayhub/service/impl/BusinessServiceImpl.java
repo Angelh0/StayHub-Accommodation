@@ -10,14 +10,18 @@ import com.Angelh0.stayhub.entity.SearchRoomEntity;
 import com.Angelh0.stayhub.enums.StatusType;
 import com.Angelh0.stayhub.grpcClient.GrpcClientGetAvailability;
 import com.Angelh0.stayhub.repository.AccommodationRepository;
+import com.Angelh0.stayhub.repository.RoomRepository;
 import com.Angelh0.stayhub.repository.SearchResultRepository;
+import com.Angelh0.stayhub.repository.SearchRoomRepository;
 import com.Angelh0.stayhub.service.BusinessService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -33,12 +37,16 @@ public class BusinessServiceImpl implements BusinessService {
     private final AccommodationConverter accommodationConverter;
     private final SearchResultRepository searchResultRepository;
     private final AccommodationRepository accommodationRepository;
+    private final SearchRoomRepository searchRoomRepository;
+    private final RoomRepository roomRepository;
 
-    public BusinessServiceImpl(GrpcClientGetAvailability availabilityGrpcClient, AccommodationConverter accommodationConverter, SearchResultRepository searchResultRepository, AccommodationRepository accommodationRepository) {
+    public BusinessServiceImpl(GrpcClientGetAvailability availabilityGrpcClient, AccommodationConverter accommodationConverter, SearchResultRepository searchResultRepository, AccommodationRepository accommodationRepository, SearchRoomRepository searchRoomRepository, RoomRepository roomRepository) {
         this.availabilityGrpcClient = availabilityGrpcClient;
         this.accommodationConverter = accommodationConverter;
         this.searchResultRepository = searchResultRepository;
         this.accommodationRepository = accommodationRepository;
+        this.searchRoomRepository = searchRoomRepository;
+        this.roomRepository = roomRepository;
     }
 
     @Override
@@ -96,38 +104,7 @@ public class BusinessServiceImpl implements BusinessService {
         return accommodation;
     }
 
-
     @Override
-    public AccommodationEntity updateValues(AccommodationEntity accommodationEntity) {
-
-        Double priceMax = null;
-        Double priceMin = null;
-        int contador = 0;
-
-        List<RoomEntity> roomEntity = accommodationEntity.getRooms();
-
-        for (RoomEntity room : roomEntity) {
-
-            if (room.getStatus() == StatusType.Available) {
-                contador++;
-
-                if (priceMax == null || room.getPrice() > priceMax) {
-                    priceMax = room.getPrice();
-                }
-
-                if (priceMin == null || room.getPrice() < priceMin) {
-                    priceMin = room.getPrice();
-                }
-            }
-        }
-
-        accommodationEntity.setPriceMin(priceMin);
-        accommodationEntity.setPriceMax(priceMax);
-        accommodationEntity.setAvailability(contador);
-
-        return accommodationEntity;
-    }
-
     public void saveSearchResult(List<RoomEntity> availableRooms) {
         SearchResultEntity searchResultEntity = new SearchResultEntity();
 
@@ -162,6 +139,32 @@ public class BusinessServiceImpl implements BusinessService {
 
         searchResultRepository.save(searchResultEntity);
         searchResultRepository.flush();
+    }
+
+    @Override
+    public void updateRoomValues() {
+
+        Optional<SearchRoomEntity> searchClient = searchRoomRepository.findById(1);
+
+        Optional<SearchResultEntity> search = searchResultRepository.findById(1);
+
+        if (search.isPresent() && searchClient.isPresent()) {
+
+            LocalDate getCheckIn = searchClient.get().getCheckIn();
+            LocalDate getCheckOut = searchClient.get().getCheckOut();
+
+            long daysDiff = ChronoUnit.DAYS.between(getCheckIn, getCheckOut);
+
+            List<RoomEntity> availableRooms = search.get().getRooms();
+
+            for (RoomEntity roomEntity : availableRooms) {
+                double price = roomEntity.getPrice();
+                double totalPrice = daysDiff * price;
+
+                roomEntity.setTotalPrice(totalPrice);
+                roomRepository.save(roomEntity);
+            }
+        }
     }
 
 
@@ -199,5 +202,36 @@ public class BusinessServiceImpl implements BusinessService {
                 accommodationRepository.saveAndFlush(accommodation);
             }
         }
+    }
+
+    @Override
+    public AccommodationEntity updateValues(AccommodationEntity accommodationEntity) {
+
+        Double priceMax = null;
+        Double priceMin = null;
+        int contador = 0;
+
+        List<RoomEntity> roomEntity = accommodationEntity.getRooms();
+
+        for (RoomEntity room : roomEntity) {
+
+            if (room.getStatus() == StatusType.Available) {
+                contador++;
+
+                if (priceMax == null || room.getPrice() > priceMax) {
+                    priceMax = room.getPrice();
+                }
+
+                if (priceMin == null || room.getPrice() < priceMin) {
+                    priceMin = room.getPrice();
+                }
+            }
+        }
+
+        accommodationEntity.setPriceMin(priceMin);
+        accommodationEntity.setPriceMax(priceMax);
+        accommodationEntity.setAvailability(contador);
+
+        return accommodationEntity;
     }
 }

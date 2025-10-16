@@ -47,6 +47,8 @@ public class RoomEntity {
     @Column(name="Statustype")
     private StatusType status;
 
+    private double totalPrice;
+
     @ManyToOne(fetch = FetchType.EAGER)
     private AccommodationEntity accommodation;
 

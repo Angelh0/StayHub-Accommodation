@@ -15,4 +15,6 @@ public interface BusinessService {
     List<String> filterRoomAvailable(List<RoomEntity> roomEntities);
     List<RoomEntity> filterCheckAvailability(List<String> uuidList, List<RoomEntity> roomEntities, LocalDate checkIn, LocalDate checkOut);
     List<ResponseAccommodationDTO> filterAccommodation(List<RoomEntity> available);
+    void saveSearchResult(List<RoomEntity> availableRooms);
+    void updateRoomValues();
 }

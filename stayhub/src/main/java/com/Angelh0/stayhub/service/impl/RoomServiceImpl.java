@@ -40,11 +40,6 @@ public class RoomServiceImpl implements RoomService {
     @Autowired
     private BusinessService businessService;
 
-    @Autowired
-    private SearchRoomRepository searchRoomRepository;
-
-    @Autowired
-    private SearchConverter searchConverter;
 
 
     @Override

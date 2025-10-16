@@ -1,8 +1,10 @@
 package com.Angelh0.stayhub.service;
 
 import com.Angelh0.stayhub.dto.ResponseAccommodationDTO;
+import com.Angelh0.stayhub.dto.ResponseRoomDTO;
 import com.Angelh0.stayhub.dto.RoomDTO;
 import com.Angelh0.stayhub.dto.SearchRoomDTO;
+import com.Angelh0.stayhub.entity.RoomEntity;
 import com.Angelh0.stayhub.entity.SearchRoomEntity;
 
 import java.time.LocalDate;
@@ -14,5 +16,6 @@ public interface SearchService {
 
     SearchRoomDTO getChecks();
     List<ResponseAccommodationDTO> searchAdvanced(SearchRoomDTO searchRoomDTO, String city, int room, int capacity, LocalDate checkIn, LocalDate checkOut);
+    List<ResponseRoomDTO> searchAdvancedRoom(UUID uuid);
     SearchRoomDTO searchGetRooms(UUID uuid);
 }

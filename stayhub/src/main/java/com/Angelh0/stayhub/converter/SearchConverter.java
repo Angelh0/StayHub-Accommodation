@@ -1,6 +1,7 @@
 package com.Angelh0.stayhub.converter;
 
 import com.Angelh0.stayhub.dto.SearchRoomDTO;
+import com.Angelh0.stayhub.entity.RoomEntity;
 import com.Angelh0.stayhub.entity.SearchRoomEntity;
 import org.springframework.stereotype.Component;
 
@@ -22,7 +23,6 @@ public class SearchConverter {
 
     public SearchRoomDTO convertToDTO(SearchRoomEntity searchRoomEntity) {
         SearchRoomDTO searchRoomDTO = new SearchRoomDTO();
-        searchRoomDTO.setUuidRoom(searchRoomEntity.getUuidRoom());
         searchRoomDTO.setSearchUuid(searchRoomEntity.getSearchUuid());
         searchRoomDTO.setCity(searchRoomEntity.getCity());
         searchRoomDTO.setRoom(searchRoomEntity.getRoom());

@@ -1,10 +1,12 @@
 package com.Angelh0.stayhub.controller;
 
 import com.Angelh0.stayhub.dto.ResponseAccommodationDTO;
+import com.Angelh0.stayhub.dto.ResponseRoomDTO;
 import com.Angelh0.stayhub.dto.RoomDTO;
 import com.Angelh0.stayhub.dto.SearchRoomDTO;
 import com.Angelh0.stayhub.service.RoomService;
 import com.Angelh0.stayhub.service.SearchService;
+import com.google.api.Http;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -71,6 +73,13 @@ public class RoomController {
         List<ResponseAccommodationDTO> dtoList = searchService.searchAdvanced(searchRoomDTO, city, room, capacity, checkIn, checkOut);
 
         return ResponseEntity.ok(dtoList);
+    }
+
+    @GetMapping("/getSearchRoom/{uuid}")
+    public ResponseEntity<List<ResponseRoomDTO>> searchAdvancedRoom(@PathVariable UUID uuid) {
+        List<ResponseRoomDTO> room = searchService.searchAdvancedRoom(uuid);
+        ResponseEntity<List<ResponseRoomDTO>> responseEntity = new ResponseEntity<>(room, HttpStatus.OK);
+        return responseEntity;
     }
 
 }

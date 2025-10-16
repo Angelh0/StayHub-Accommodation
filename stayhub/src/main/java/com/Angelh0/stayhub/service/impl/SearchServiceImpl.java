@@ -4,21 +4,16 @@ import com.Angelh0.stayhub.converter.AccommodationConverter;
 import com.Angelh0.stayhub.converter.RoomConverter;
 import com.Angelh0.stayhub.converter.SearchConverter;
 import com.Angelh0.stayhub.dto.*;
-import com.Angelh0.stayhub.entity.AccommodationEntity;
 import com.Angelh0.stayhub.entity.RoomEntity;
+import com.Angelh0.stayhub.entity.SearchResultEntity;
 import com.Angelh0.stayhub.entity.SearchRoomEntity;
 import com.Angelh0.stayhub.enums.StatusType;
 import com.Angelh0.stayhub.exception.DateValidate;
-import com.Angelh0.stayhub.grpcClient.GrpcClientGetAvailability;
 import com.Angelh0.stayhub.repository.RoomRepository;
+import com.Angelh0.stayhub.repository.SearchResultRepository;
 import com.Angelh0.stayhub.repository.SearchRoomRepository;
 import com.Angelh0.stayhub.service.BusinessService;
 import com.Angelh0.stayhub.service.SearchService;
-import com.checkAvailability.grpc.AvailabilityRequest;
-import com.checkAvailability.grpc.AvailabilityResponse;
-import com.checkAvailability.grpc.RoomAvailability;
-import com.checkAvailability.grpc.availabilityServiceGrpc;
-import org.apache.coyote.Response;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -33,25 +28,21 @@ public class SearchServiceImpl implements SearchService {
     private final SearchRoomRepository searchRoomRepository;
     private final SearchConverter searchConverter;
     private final RoomRepository roomRepository;
-    private final RoomConverter roomConverter;
-    private final GrpcClientGetAvailability availabilityGrpcClient;
-    private final AccommodationConverter accommodationConverter;
+    private final RoomConverter roomConverter;;
     private final BusinessService businessService;
-
+    private final SearchResultRepository searchResultRepository;
 
     public SearchServiceImpl(SearchRoomRepository searchRoomRepository,
                              SearchConverter searchConverter,
                              RoomRepository roomRepository,
-                             RoomConverter roomConverter, GrpcClientGetAvailability availabilityGrpcClient, AccommodationConverter accommodationConverter, BusinessService businessService) {
+                             RoomConverter roomConverter, BusinessService businessService, SearchResultRepository searchResultRepository1, AccommodationConverter accommodationConverter) {
         this.searchRoomRepository = searchRoomRepository;
         this.searchConverter = searchConverter;
         this.roomRepository = roomRepository;
         this.roomConverter = roomConverter;
-        this.availabilityGrpcClient = availabilityGrpcClient;
-        this.accommodationConverter = accommodationConverter;
         this.businessService = businessService;
+        this.searchResultRepository = searchResultRepository1;
     }
-
 
     @Override
     public List<ResponseAccommodationDTO> searchAdvanced(SearchRoomDTO searchRoomDTO, String city, int room, int capacity, LocalDate checkIn, LocalDate checkOut) {
@@ -70,6 +61,29 @@ public class SearchServiceImpl implements SearchService {
         return businessService.filterAccommodation(availableRooms);
     }
 
+
+    @Override
+    public List<ResponseRoomDTO> searchAdvancedRoom(UUID uuid) {
+
+        businessService.updateRoomValues();
+
+        Optional<SearchResultEntity> search = searchResultRepository.findById(1);
+
+        List<ResponseRoomDTO> roomDTOs = new ArrayList<>();
+
+        if (search.isPresent()) {
+            List<RoomEntity> available = search.get().getRooms();
+
+            for (RoomEntity roomEntity : available) {
+                if (roomEntity.getAccommodation().getUuid().equals(uuid)) {
+                    ResponseRoomDTO responseRoomDTO = roomConverter.responseRoomToDTO(roomEntity);
+                    roomDTOs.add(responseRoomDTO);
+                }
+            }
+        }
+
+        return roomDTOs;
+    }
 
 
     public void saveSearch(SearchRoomDTO searchRoomDTO, String city, int room, int capacity, LocalDate checkIn, LocalDate checkOut) {

@@ -11,8 +11,6 @@ import java.util.UUID;
 @Setter
 public class SearchRoomDTO {
 
-    private UUID uuidRoom;
-
     private UUID searchUuid;
 
     private String city;

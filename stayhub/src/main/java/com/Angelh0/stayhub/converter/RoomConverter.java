@@ -1,5 +1,6 @@
 package com.Angelh0.stayhub.converter;
 
+import com.Angelh0.stayhub.dto.ResponseRoomDTO;
 import com.Angelh0.stayhub.dto.RoomAdminDTO;
 import com.Angelh0.stayhub.dto.RoomDTO;
 import com.Angelh0.stayhub.dto.SearchRoomDTO;
@@ -56,12 +57,25 @@ public class RoomConverter {
 
     public SearchRoomDTO convertToDTO(RoomEntity roomEntity) {
         SearchRoomDTO searchRoomDTO = new SearchRoomDTO();
-        searchRoomDTO.setUuidRoom(roomEntity.getUuid());
         searchRoomDTO.setCity(roomEntity.getAccommodation().getCity());
         searchRoomDTO.setCapacity(roomEntity.getCapacity());
         searchRoomDTO.setCheckOut(searchRoomDTO.getCheckOut());
         searchRoomDTO.setCheckIn(searchRoomDTO.getCheckIn());
 
         return searchRoomDTO;
+    }
+
+    public ResponseRoomDTO responseRoomToDTO(RoomEntity roomEntity) {
+        ResponseRoomDTO responseRoomDTO = new ResponseRoomDTO();
+        responseRoomDTO.setUuid(roomEntity.getUuid());
+        responseRoomDTO.setCity(roomEntity.getAccommodation().getCity());
+        responseRoomDTO.setRoom(roomEntity.getRoom());
+        responseRoomDTO.setBeds(roomEntity.getBeds());
+        responseRoomDTO.setCapacity(roomEntity.getCapacity());
+        responseRoomDTO.setType(roomEntity.getType());
+        responseRoomDTO.setTotalPrice(roomEntity.getTotalPrice());
+        responseRoomDTO.setAreaInSquareMeters(roomEntity.getAreaInSquareMeters());
+
+        return responseRoomDTO;
     }
 }
