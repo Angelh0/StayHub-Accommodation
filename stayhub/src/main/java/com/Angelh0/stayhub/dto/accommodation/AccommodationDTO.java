@@ -1,14 +1,17 @@
-package com.Angelh0.stayhub.dto;
+package com.Angelh0.stayhub.dto.accommodation;
 
+import com.Angelh0.stayhub.dto.room.RoomDTO;
 import com.Angelh0.stayhub.enums.AccommodationType;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
 import java.util.UUID;
+
 
 @Getter
 @Setter
-public class RequestAccommodationDTO {
+public class AccommodationDTO {
 
     private UUID uuid;
     private String name;
@@ -16,4 +19,8 @@ public class RequestAccommodationDTO {
     private String description;
     private String city;
     private String country;
+    private int availability;
+    private Double priceMax;
+    private Double priceMin;
+    private List<RoomDTO> rooms;
 }

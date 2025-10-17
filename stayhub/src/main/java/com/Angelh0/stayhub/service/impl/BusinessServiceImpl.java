@@ -1,8 +1,8 @@
 package com.Angelh0.stayhub.service.impl;
 
 import com.Angelh0.stayhub.converter.AccommodationConverter;
-import com.Angelh0.stayhub.dto.ResponseAccommodationDTO;
-import com.Angelh0.stayhub.dto.RoomAvailabilityDTO;
+import com.Angelh0.stayhub.dto.accommodation.ResponseAccommodationDTO;
+import com.Angelh0.stayhub.dto.room.RoomAvailabilityDTO;
 import com.Angelh0.stayhub.entity.AccommodationEntity;
 import com.Angelh0.stayhub.entity.RoomEntity;
 import com.Angelh0.stayhub.entity.SearchResultEntity;
@@ -14,10 +14,7 @@ import com.Angelh0.stayhub.repository.RoomRepository;
 import com.Angelh0.stayhub.repository.SearchResultRepository;
 import com.Angelh0.stayhub.repository.SearchRoomRepository;
 import com.Angelh0.stayhub.service.BusinessService;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
-import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -25,7 +22,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @Transactional

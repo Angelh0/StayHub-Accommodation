@@ -1,4 +1,4 @@
-package com.Angelh0.stayhub.dto;
+package com.Angelh0.stayhub.dto.room;
 
 import lombok.Getter;
 import lombok.Setter;

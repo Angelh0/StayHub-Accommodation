@@ -1,7 +1,6 @@
 package com.Angelh0.stayhub.grpcClient;
 
-import com.Angelh0.stayhub.dto.RoomAvailabilityDTO;
-import com.Angelh0.stayhub.dto.SearchRoomDTO;
+import com.Angelh0.stayhub.dto.room.RoomAvailabilityDTO;
 import com.checkAvailability.grpc.AvailabilityRequest;
 import com.checkAvailability.grpc.AvailabilityResponse;
 import com.checkAvailability.grpc.RoomAvailability;

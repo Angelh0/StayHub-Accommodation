@@ -3,7 +3,9 @@ package com.Angelh0.stayhub.service.impl;
 import com.Angelh0.stayhub.converter.AccommodationConverter;
 import com.Angelh0.stayhub.converter.RoomConverter;
 import com.Angelh0.stayhub.converter.SearchConverter;
-import com.Angelh0.stayhub.dto.*;
+import com.Angelh0.stayhub.dto.accommodation.ResponseAccommodationDTO;
+import com.Angelh0.stayhub.dto.room.ResponseRoomDTO;
+import com.Angelh0.stayhub.dto.search.SearchRoomDTO;
 import com.Angelh0.stayhub.entity.RoomEntity;
 import com.Angelh0.stayhub.entity.SearchResultEntity;
 import com.Angelh0.stayhub.entity.SearchRoomEntity;
@@ -111,7 +113,7 @@ public class SearchServiceImpl implements SearchService {
             if (room.getStatus() == StatusType.Disable) {
                 return null;
             }
-            return roomConverter.convertToDTO(room);
+            return searchConverter.convertToDTO(room);
         }
         return null;
     }

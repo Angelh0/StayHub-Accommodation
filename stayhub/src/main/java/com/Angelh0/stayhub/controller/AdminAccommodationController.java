@@ -1,11 +1,10 @@
 package com.Angelh0.stayhub.controller;
 
-import com.Angelh0.stayhub.dto.AccommodationDTO;
 import com.Angelh0.stayhub.service.AccommodationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.Angelh0.stayhub.dto.ResponseAccommodationDTO;
+import com.Angelh0.stayhub.dto.accommodation.ResponseAccommodationDTO;
 
 
 import java.util.List;

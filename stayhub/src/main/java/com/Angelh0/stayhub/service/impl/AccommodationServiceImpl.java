@@ -1,12 +1,11 @@
 package com.Angelh0.stayhub.service.impl;
 
 import com.Angelh0.stayhub.converter.AccommodationConverter;
-import com.Angelh0.stayhub.dto.AccommodationDTO;
-import com.Angelh0.stayhub.dto.RequestAccommodationDTO;
-import com.Angelh0.stayhub.dto.ResponseAccommodationDTO;
+import com.Angelh0.stayhub.dto.accommodation.AccommodationDTO;
+import com.Angelh0.stayhub.dto.accommodation.RequestAccommodationDTO;
+import com.Angelh0.stayhub.dto.accommodation.ResponseAccommodationDTO;
 import com.Angelh0.stayhub.entity.AccommodationEntity;
 import com.Angelh0.stayhub.repository.AccommodationRepository;
-import com.Angelh0.stayhub.repository.RoomRepository;
 import com.Angelh0.stayhub.service.AccommodationService;
 import com.Angelh0.stayhub.service.BusinessService;
 import jakarta.transaction.Transactional;
@@ -126,8 +125,3 @@ public class AccommodationServiceImpl implements AccommodationService {
     }
 
 }
-
-
-
-
-

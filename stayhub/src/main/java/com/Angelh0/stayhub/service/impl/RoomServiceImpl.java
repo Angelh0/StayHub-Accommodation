@@ -1,16 +1,13 @@
 package com.Angelh0.stayhub.service.impl;
 
 import com.Angelh0.stayhub.converter.RoomConverter;
-import com.Angelh0.stayhub.converter.SearchConverter;
-import com.Angelh0.stayhub.dto.RoomAdminDTO;
-import com.Angelh0.stayhub.dto.RoomDTO;
-import com.Angelh0.stayhub.dto.SearchRoomDTO;
+import com.Angelh0.stayhub.dto.room.ResponseRoomDTO;
+import com.Angelh0.stayhub.dto.room.RoomAdminDTO;
+import com.Angelh0.stayhub.dto.room.RoomDTO;
 import com.Angelh0.stayhub.entity.RoomEntity;
-import com.Angelh0.stayhub.entity.SearchRoomEntity;
 import com.Angelh0.stayhub.enums.StatusType;
 import com.Angelh0.stayhub.repository.AccommodationRepository;
 import com.Angelh0.stayhub.repository.RoomRepository;
-import com.Angelh0.stayhub.repository.SearchRoomRepository;
 import com.Angelh0.stayhub.service.BusinessService;
 import com.Angelh0.stayhub.service.RoomService;
 import jakarta.transaction.Transactional;
@@ -19,7 +16,6 @@ import org.springframework.stereotype.Component;
 import com.Angelh0.stayhub.entity.AccommodationEntity;
 
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -117,16 +113,14 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public RoomDTO getRooms(UUID uuid) {
+    public ResponseRoomDTO getRooms(UUID uuid) {
 
         Optional<RoomEntity> roomEntity = roomRepository.findByUuid(uuid);
 
         if (roomEntity.isPresent()) {
             RoomEntity room = roomEntity.get();
-            if (room.getStatus() == StatusType.Disable) {
-                return null;
-            }
-            return roomConverter.convertEntityToDTO(room);
+
+            return roomConverter.responseRoomToDTO(room);
         }
         return null;
     }

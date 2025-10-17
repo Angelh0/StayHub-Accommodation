@@ -1,4 +1,4 @@
-package com.Angelh0.stayhub.dto;
+package com.Angelh0.stayhub.dto.search;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;

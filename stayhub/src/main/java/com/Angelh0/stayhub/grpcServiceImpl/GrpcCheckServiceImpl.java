@@ -1,6 +1,6 @@
 package com.Angelh0.stayhub.grpcServiceImpl;
 
-import com.Angelh0.stayhub.dto.SearchRoomDTO;
+import com.Angelh0.stayhub.dto.search.SearchRoomDTO;
 import com.Angelh0.stayhub.service.SearchService;
 import com.checkServiceGrpc.grpc.CheckRequest;
 import com.checkServiceGrpc.grpc.CheckResponse;

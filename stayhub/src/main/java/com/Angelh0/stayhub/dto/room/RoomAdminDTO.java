@@ -1,4 +1,4 @@
-package com.Angelh0.stayhub.dto;
+package com.Angelh0.stayhub.dto.room;
 
 import com.Angelh0.stayhub.enums.RoomType;
 import com.Angelh0.stayhub.enums.StatusType;
@@ -9,8 +9,9 @@ import java.util.UUID;
 
 @Getter
 @Setter
-public class RoomDTO {
+public class RoomAdminDTO {
 
+    private UUID uuidAcc;
     private UUID uuid;
     private String city;
     private int room;

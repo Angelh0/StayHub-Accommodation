@@ -1,5 +1,6 @@
-package com.Angelh0.stayhub.dto;
+package com.Angelh0.stayhub.dto.search;
 
+import com.Angelh0.stayhub.dto.room.RoomAvailabilityDTO;
 import lombok.Getter;
 import lombok.Setter;
 

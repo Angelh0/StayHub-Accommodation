@@ -1,8 +1,8 @@
 package com.Angelh0.stayhub.converter;
 
-import com.Angelh0.stayhub.dto.AccommodationDTO;
-import com.Angelh0.stayhub.dto.RequestAccommodationDTO;
-import com.Angelh0.stayhub.dto.ResponseAccommodationDTO;
+import com.Angelh0.stayhub.dto.accommodation.AccommodationDTO;
+import com.Angelh0.stayhub.dto.accommodation.RequestAccommodationDTO;
+import com.Angelh0.stayhub.dto.accommodation.ResponseAccommodationDTO;
 import com.Angelh0.stayhub.entity.AccommodationEntity;
 import org.springframework.stereotype.Component;
 
@@ -80,21 +80,6 @@ public class AccommodationConverter {
         accommodationEntity.setCity(requestAccommodationDTO.getCity());
         accommodationEntity.setCountry(requestAccommodationDTO.getCountry());
 
-
-        return accommodationEntity;
-    }
-
-    public AccommodationEntity responseToEntity (ResponseAccommodationDTO responseAccommodationDTO) {
-        AccommodationEntity accommodationEntity = new AccommodationEntity();
-        accommodationEntity.setUuid(responseAccommodationDTO.getUuid());
-        accommodationEntity.setName(responseAccommodationDTO.getName());
-        accommodationEntity.setType(responseAccommodationDTO.getType());
-        accommodationEntity.setDescription(responseAccommodationDTO.getDescription());
-        accommodationEntity.setCity(responseAccommodationDTO.getCity());
-        accommodationEntity.setCountry(responseAccommodationDTO.getCountry());
-        accommodationEntity.setAvailability(responseAccommodationDTO.getAvailability());
-        accommodationEntity.setPriceMax(responseAccommodationDTO.getPriceMax());
-        accommodationEntity.setPriceMin(responseAccommodationDTO.getPriceMin());
 
         return accommodationEntity;
     }

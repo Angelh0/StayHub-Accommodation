@@ -1,8 +1,8 @@
 package com.Angelh0.stayhub.service;
 
-import com.Angelh0.stayhub.dto.AccommodationDTO;
-import com.Angelh0.stayhub.dto.RequestAccommodationDTO;
-import com.Angelh0.stayhub.dto.ResponseAccommodationDTO;
+import com.Angelh0.stayhub.dto.accommodation.AccommodationDTO;
+import com.Angelh0.stayhub.dto.accommodation.RequestAccommodationDTO;
+import com.Angelh0.stayhub.dto.accommodation.ResponseAccommodationDTO;
 
 import java.util.List;
 import java.util.UUID;

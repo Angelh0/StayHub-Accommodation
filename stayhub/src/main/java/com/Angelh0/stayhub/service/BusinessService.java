@@ -1,13 +1,11 @@
 package com.Angelh0.stayhub.service;
 
-import com.Angelh0.stayhub.dto.ResponseAccommodationDTO;
+import com.Angelh0.stayhub.dto.accommodation.ResponseAccommodationDTO;
 import com.Angelh0.stayhub.entity.AccommodationEntity;
 import com.Angelh0.stayhub.entity.RoomEntity;
-import com.Angelh0.stayhub.entity.SearchRoomEntity;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
 
 public interface BusinessService {
     AccommodationEntity updateValues(AccommodationEntity accommodationEntity);

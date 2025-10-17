@@ -1,13 +1,11 @@
 package com.Angelh0.stayhub.controller;
 
-import com.Angelh0.stayhub.dto.ResponseAccommodationDTO;
-import com.Angelh0.stayhub.dto.ResponseRoomDTO;
-import com.Angelh0.stayhub.dto.RoomDTO;
-import com.Angelh0.stayhub.dto.SearchRoomDTO;
+import com.Angelh0.stayhub.dto.accommodation.ResponseAccommodationDTO;
+import com.Angelh0.stayhub.dto.room.ResponseRoomDTO;
+import com.Angelh0.stayhub.dto.room.RoomDTO;
+import com.Angelh0.stayhub.dto.search.SearchRoomDTO;
 import com.Angelh0.stayhub.service.RoomService;
 import com.Angelh0.stayhub.service.SearchService;
-import com.google.api.Http;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,9 +43,9 @@ public class RoomController {
     }
 
     @GetMapping("/getRooms/{uuid}")
-    public ResponseEntity<RoomDTO> getRooms(@PathVariable UUID uuid) {
-        RoomDTO roomDTO = roomService.getRooms(uuid);
-        ResponseEntity<RoomDTO> responseEntity = new ResponseEntity<>(roomDTO, HttpStatus.OK);
+    public ResponseEntity<ResponseRoomDTO> getRooms(@PathVariable UUID uuid) {
+        ResponseRoomDTO responseRoomDTO = roomService.getRooms(uuid);
+        ResponseEntity<ResponseRoomDTO> responseEntity = new ResponseEntity<>(responseRoomDTO, HttpStatus.OK);
         return responseEntity;
     }
 
@@ -58,29 +56,7 @@ public class RoomController {
         return ResponseEntity.ok("Room with UUID: [" + uuid + "] deleted successfully");
     }
 
-    @GetMapping("/getAdvanceRoom/search/{city}/room/{room}/capacity/{capacity}/checkIn/{checkIn}/checkOut/{checkOut}")
-    public ResponseEntity<List<ResponseAccommodationDTO>> searchAdvanced(
-            @PathVariable String city,
-            @PathVariable int room,
-            @PathVariable int capacity,
-            @PathVariable @DateTimeFormat(pattern = "d-M-yyyy") LocalDate checkIn,
-            @PathVariable @DateTimeFormat(pattern = "d-M-yyyy") LocalDate checkOut) {
 
-        SearchRoomDTO searchRoomDTO = new SearchRoomDTO();
-        searchRoomDTO.setCheckIn(checkIn);
-        searchRoomDTO.setCheckOut(checkOut);
-
-        List<ResponseAccommodationDTO> dtoList = searchService.searchAdvanced(searchRoomDTO, city, room, capacity, checkIn, checkOut);
-
-        return ResponseEntity.ok(dtoList);
-    }
-
-    @GetMapping("/getSearchRoom/{uuid}")
-    public ResponseEntity<List<ResponseRoomDTO>> searchAdvancedRoom(@PathVariable UUID uuid) {
-        List<ResponseRoomDTO> room = searchService.searchAdvancedRoom(uuid);
-        ResponseEntity<List<ResponseRoomDTO>> responseEntity = new ResponseEntity<>(room, HttpStatus.OK);
-        return responseEntity;
-    }
 
 }
 

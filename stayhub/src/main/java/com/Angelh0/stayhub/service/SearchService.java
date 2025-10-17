@@ -1,15 +1,11 @@
 package com.Angelh0.stayhub.service;
 
-import com.Angelh0.stayhub.dto.ResponseAccommodationDTO;
-import com.Angelh0.stayhub.dto.ResponseRoomDTO;
-import com.Angelh0.stayhub.dto.RoomDTO;
-import com.Angelh0.stayhub.dto.SearchRoomDTO;
-import com.Angelh0.stayhub.entity.RoomEntity;
-import com.Angelh0.stayhub.entity.SearchRoomEntity;
+import com.Angelh0.stayhub.dto.accommodation.ResponseAccommodationDTO;
+import com.Angelh0.stayhub.dto.room.ResponseRoomDTO;
+import com.Angelh0.stayhub.dto.search.SearchRoomDTO;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 public interface SearchService {

@@ -1,9 +1,9 @@
 package com.Angelh0.stayhub.converter;
 
-import com.Angelh0.stayhub.dto.ResponseRoomDTO;
-import com.Angelh0.stayhub.dto.RoomAdminDTO;
-import com.Angelh0.stayhub.dto.RoomDTO;
-import com.Angelh0.stayhub.dto.SearchRoomDTO;
+import com.Angelh0.stayhub.dto.room.ResponseRoomDTO;
+import com.Angelh0.stayhub.dto.room.RoomAdminDTO;
+import com.Angelh0.stayhub.dto.room.RoomDTO;
+import com.Angelh0.stayhub.dto.search.SearchRoomDTO;
 import com.Angelh0.stayhub.entity.RoomEntity;
 import org.springframework.stereotype.Component;
 
@@ -53,16 +53,6 @@ public class RoomConverter {
         roomAdminDTO.setStatus(roomEntity.getStatus());
 
         return roomAdminDTO;
-    }
-
-    public SearchRoomDTO convertToDTO(RoomEntity roomEntity) {
-        SearchRoomDTO searchRoomDTO = new SearchRoomDTO();
-        searchRoomDTO.setCity(roomEntity.getAccommodation().getCity());
-        searchRoomDTO.setCapacity(roomEntity.getCapacity());
-        searchRoomDTO.setCheckOut(searchRoomDTO.getCheckOut());
-        searchRoomDTO.setCheckIn(searchRoomDTO.getCheckIn());
-
-        return searchRoomDTO;
     }
 
     public ResponseRoomDTO responseRoomToDTO(RoomEntity roomEntity) {
