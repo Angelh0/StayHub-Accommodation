@@ -41,7 +41,6 @@ public class GrpcClientGetAvailability {
             dto.setAvailable(roomAvailability.getAvailable());
             rooms.add(dto);
         }
-
         return rooms;
     }
 }

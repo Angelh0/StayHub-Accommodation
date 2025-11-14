@@ -1,6 +1,7 @@
 package com.Angelh0.stayhub.exception;
 
 import com.Angelh0.stayhub.exception.AccommodationException.AccommodationContainsRoom;
+import com.Angelh0.stayhub.exception.RoomException.RoomContainsReservation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -49,6 +50,16 @@ public class GlobalExceptionHandler {
                 HttpStatus.NOT_FOUND,
                 LocalDateTime.now());
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(RoomContainsReservation.class)
+    public ResponseEntity<ErrorResponse> containsReservation(RoomContainsReservation e) {
+        ErrorResponse errorResponse = new ErrorResponse("CONTAINS_RESERVATION",
+                e.getMessage(),
+                HttpStatus.CONFLICT,
+                LocalDateTime.now());
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
 
 }
