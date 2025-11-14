@@ -3,6 +3,7 @@ package com.Angelh0.stayhub.converter;
 import com.Angelh0.stayhub.dto.accommodation.AccommodationDTO;
 import com.Angelh0.stayhub.dto.accommodation.RequestAccommodationDTO;
 import com.Angelh0.stayhub.dto.accommodation.ResponseAccommodationDTO;
+import com.Angelh0.stayhub.dto.accommodation.UpdateAccommodationDTO;
 import com.Angelh0.stayhub.entity.AccommodationEntity;
 import org.springframework.stereotype.Component;
 

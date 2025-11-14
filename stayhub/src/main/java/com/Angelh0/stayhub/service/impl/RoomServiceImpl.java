@@ -4,8 +4,10 @@ import com.Angelh0.stayhub.converter.RoomConverter;
 import com.Angelh0.stayhub.dto.room.ResponseRoomDTO;
 import com.Angelh0.stayhub.dto.room.RoomAdminDTO;
 import com.Angelh0.stayhub.dto.room.RoomDTO;
+import com.Angelh0.stayhub.dto.room.UpdateRoomDTO;
 import com.Angelh0.stayhub.entity.RoomEntity;
 import com.Angelh0.stayhub.enums.StatusType;
+import com.Angelh0.stayhub.exception.NotFoundException;
 import com.Angelh0.stayhub.repository.AccommodationRepository;
 import com.Angelh0.stayhub.repository.RoomRepository;
 import com.Angelh0.stayhub.service.BusinessService;
@@ -70,46 +72,30 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public RoomDTO modifiedRooms(RoomDTO roomDTO, UUID uuid) {
+    public RoomDTO modifiedRooms(UpdateRoomDTO updateRoomDTO, UUID uuid) {
 
         Optional<RoomEntity> roomEntity = roomRepository.findByUuid(uuid);
 
         if (roomEntity.isPresent()) {
             RoomEntity entity = roomEntity.get();
 
-            if (roomDTO.getRoom() != 0) {
-                entity.setRoom(roomDTO.getRoom());
+            if (updateRoomDTO.getCapacity() != 0) {
+                entity.setCapacity(updateRoomDTO.getCapacity());
             }
 
-            if (roomDTO.getCapacity() != 0) {
-                entity.setCapacity(roomDTO.getCapacity());
+            if (updateRoomDTO.getBeds() != 0) {
+                entity.setBeds(updateRoomDTO.getBeds());
             }
 
-            if (roomDTO.getBeds() != 0) {
-                entity.setBeds(roomDTO.getBeds());
-            }
-
-            if (roomDTO.getType() != null) {
-                entity.setType(roomDTO.getType());
-            }
-
-            if (roomDTO.getPrice() != 0) {
-                entity.setPrice(roomDTO.getPrice());
-            }
-
-            if (roomDTO.getAreaInSquareMeters() != 0) {
-                entity.setAreaInSquareMeters(roomDTO.getAreaInSquareMeters());
-            }
-
-            if (roomDTO.getStatus() != null) {
-                entity.setStatus(roomDTO.getStatus());
+            if (updateRoomDTO.getPrice() != 0) {
+                entity.setPrice(updateRoomDTO.getPrice());
             }
 
             roomRepository.save(entity);
 
             return roomConverter.convertEntityToDTO(entity);
         }
-        return null;
+        throw new NotFoundException("No se ha encontrado ninguna habitacion con el UUID introducido");
     }
 
     @Override
@@ -122,7 +108,7 @@ public class RoomServiceImpl implements RoomService {
 
             return roomConverter.responseRoomToDTO(room);
         }
-        return null;
+        throw new NotFoundException("No se ha encontrado ninguna habitacion con el UUID introducido");
     }
 
     @Override
@@ -135,6 +121,4 @@ public class RoomServiceImpl implements RoomService {
             roomRepository.deleteByUuid(uuid);
         }
     }
-
-
 }

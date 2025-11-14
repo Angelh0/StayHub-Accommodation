@@ -3,9 +3,12 @@ package com.Angelh0.stayhub.controller;
 import com.Angelh0.stayhub.dto.accommodation.ResponseAccommodationDTO;
 import com.Angelh0.stayhub.dto.room.ResponseRoomDTO;
 import com.Angelh0.stayhub.dto.room.RoomDTO;
+import com.Angelh0.stayhub.dto.room.UpdateRoomDTO;
 import com.Angelh0.stayhub.dto.search.SearchRoomDTO;
+import com.Angelh0.stayhub.entity.RoomEntity;
 import com.Angelh0.stayhub.service.RoomService;
 import com.Angelh0.stayhub.service.SearchService;
+import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,15 +32,15 @@ public class RoomController {
     }
 
     @PostMapping("/createRoom/{uuid}")
-    public ResponseEntity<RoomDTO> createRoom( @RequestBody RoomDTO roomDTO, @PathVariable UUID uuid) {
+    public ResponseEntity<RoomDTO> createRoom(@RequestBody @Valid RoomDTO roomDTO, @PathVariable UUID uuid) {
         roomDTO = roomService.createRoom(roomDTO, uuid);
         ResponseEntity<RoomDTO> responseEntity = new ResponseEntity<>(roomDTO, HttpStatus.CREATED);
         return responseEntity;
     }
 
     @PutMapping("/modifiedRoom/{uuid}")
-    public ResponseEntity<RoomDTO> modifiedRoom(@RequestBody RoomDTO roomDTO, @PathVariable UUID uuid) {
-        roomDTO = roomService.modifiedRooms(roomDTO, uuid);
+    public ResponseEntity<RoomDTO> modifiedRoom(@RequestBody UpdateRoomDTO updateRoomDTO, @PathVariable UUID uuid) {
+        RoomDTO roomDTO = roomService.modifiedRooms(updateRoomDTO, uuid);
         ResponseEntity<RoomDTO> responseEntity = new ResponseEntity<>(roomDTO, HttpStatus.OK);
         return responseEntity;
     }

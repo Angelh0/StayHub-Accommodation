@@ -1,4 +1,4 @@
-package com.Angelh0.stayhub.exception;
+package com.Angelh0.stayhub.exception.SearchException;
 
 import java.time.LocalDate;
 

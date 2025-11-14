@@ -4,14 +4,24 @@ import com.Angelh0.stayhub.converter.AccommodationConverter;
 import com.Angelh0.stayhub.dto.accommodation.AccommodationDTO;
 import com.Angelh0.stayhub.dto.accommodation.RequestAccommodationDTO;
 import com.Angelh0.stayhub.dto.accommodation.ResponseAccommodationDTO;
+import com.Angelh0.stayhub.dto.accommodation.UpdateAccommodationDTO;
 import com.Angelh0.stayhub.entity.AccommodationEntity;
+import com.Angelh0.stayhub.entity.RoomEntity;
+import com.Angelh0.stayhub.exception.AccommodationException.AccommodationContainsRoom;
+import com.Angelh0.stayhub.exception.ErrorResponse;
+import com.Angelh0.stayhub.exception.GlobalExceptionHandler;
+import com.Angelh0.stayhub.exception.NotFoundException;
 import com.Angelh0.stayhub.repository.AccommodationRepository;
 import com.Angelh0.stayhub.service.AccommodationService;
 import com.Angelh0.stayhub.service.BusinessService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.crossstore.ChangeSetPersister;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.io.NotActiveException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -54,27 +64,19 @@ public class AccommodationServiceImpl implements AccommodationService {
     }
 
     @Override
-    public ResponseAccommodationDTO modifiedAccommodation(RequestAccommodationDTO requestAccommodationDTO, UUID uuid) {
+    public ResponseAccommodationDTO modifiedAccommodation(UpdateAccommodationDTO updateAccommodationDTO, UUID uuid) {
 
         Optional<AccommodationEntity> optionalAccommodation = accommodationRepository.findByUuid(uuid);
 
         if (optionalAccommodation.isPresent()) {
             AccommodationEntity accommodation = optionalAccommodation.get();
 
-            if (requestAccommodationDTO.getName() != null) {
-                accommodation.setName(requestAccommodationDTO.getName());
+            if (updateAccommodationDTO.getName() != null) {
+                accommodation.setName(updateAccommodationDTO.getName());
             }
-            if (requestAccommodationDTO.getType() != null) {
-                accommodation.setType(requestAccommodationDTO.getType());
-            }
-            if (requestAccommodationDTO.getDescription() != null) {
-                accommodation.setDescription(requestAccommodationDTO.getDescription());
-            }
-            if (requestAccommodationDTO.getCity() != null) {
-                accommodation.setCity(requestAccommodationDTO.getCity());
-            }
-            if (requestAccommodationDTO.getCountry() != null) {
-                accommodation.setCountry(requestAccommodationDTO.getCountry());
+
+            if (updateAccommodationDTO.getDescription() != null) {
+                accommodation.setDescription(updateAccommodationDTO.getDescription());
             }
 
             accommodation = accommodationRepository.save(accommodation);
@@ -82,21 +84,30 @@ public class AccommodationServiceImpl implements AccommodationService {
             return accommodationConverter.responseToDTO(accommodation);
         }
 
-        return null;
+        else {
+            throw new NotFoundException("No se ha encontrado ningun alojamiento con el UUID introducido");
+        }
     }
 
 
     @Override
     @Transactional
-    public void deleteAccommodation(UUID uuid) {
+    public void deleteAccommodation(UUID uuid){
 
         Optional<AccommodationEntity> accommodation = accommodationRepository.findByUuid(uuid);
-        String comment;
 
         if (accommodation.isPresent()) {
-            accommodationRepository.deleteByUuid(uuid);
+            AccommodationEntity accommodationEntity = accommodation.get();
+
+            if (!accommodationEntity.getRooms().isEmpty()) {
+                throw new AccommodationContainsRoom("No se puede eliminar un alojamiento sin borrar previamente sus habitaciones");
+            } else{
+                accommodationRepository.deleteByUuid(uuid);
+            }
+        } else {
+            throw new NotFoundException("No se ha encontrado ningun alojamiento con el UUID introducido");
         }
-    }
+     }
 
     @Override
     public AccommodationDTO getAccommodationById(UUID uuid) {
@@ -107,8 +118,9 @@ public class AccommodationServiceImpl implements AccommodationService {
             businessService.updateValues(entity.get());
             AccommodationDTO dto = accommodationConverter.toDtoWithRooms(entity.get());
                     return dto;
+        } else {
+            throw new NotFoundException("No se ha encontrado el UUID introducido");
         }
-        return null;
     }
 
     @Override

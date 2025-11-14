@@ -89,7 +89,7 @@ public class BusinessServiceImpl implements BusinessService {
            for (RoomEntity room : available) {
                if (room.getAccommodation().getUuid().equals(accommodationEntity.getUuid())) {
                    find = true;
-                   break;
+                      break;
                }
             }
            if (find) {

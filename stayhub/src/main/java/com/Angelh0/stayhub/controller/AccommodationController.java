@@ -3,7 +3,9 @@ package com.Angelh0.stayhub.controller;
 import com.Angelh0.stayhub.dto.accommodation.AccommodationDTO;
 import com.Angelh0.stayhub.dto.accommodation.RequestAccommodationDTO;
 import com.Angelh0.stayhub.dto.accommodation.ResponseAccommodationDTO;
+import com.Angelh0.stayhub.dto.accommodation.UpdateAccommodationDTO;
 import com.Angelh0.stayhub.service.AccommodationService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,17 +23,17 @@ public class AccommodationController {
     }
 
     @PostMapping("/create") //Modificado y comprobado
-    public ResponseEntity<RequestAccommodationDTO> createAccommodation(@RequestBody RequestAccommodationDTO requestAccommodationDTO) {
+    public ResponseEntity<RequestAccommodationDTO> createAccommodation(@RequestBody @Valid RequestAccommodationDTO requestAccommodationDTO) {
         requestAccommodationDTO = accommodationService.createAccommodation(requestAccommodationDTO);
         ResponseEntity<RequestAccommodationDTO> responseEntity = new ResponseEntity<>(requestAccommodationDTO, HttpStatus.CREATED);
         return responseEntity;
     }
 
-    @PutMapping("/modified/{uuid}")
-    public ResponseAccommodationDTO modifiedAccommodation(@RequestBody RequestAccommodationDTO requestAccommodationDTO, @PathVariable UUID uuid) {
-        ResponseAccommodationDTO responseAccommodationDTO = accommodationService.modifiedAccommodation(requestAccommodationDTO, uuid);
+    @PatchMapping("/modified/{uuid}")
+    public ResponseEntity<ResponseAccommodationDTO> modifiedAccommodation(@RequestBody @Valid UpdateAccommodationDTO updateAccommodationDTO, @PathVariable UUID uuid) {
+        ResponseAccommodationDTO responseAccommodationDTO = accommodationService.modifiedAccommodation(updateAccommodationDTO, uuid);
         ResponseEntity<ResponseAccommodationDTO> responseEntity = new ResponseEntity<>(responseAccommodationDTO, HttpStatus.OK);
-        return responseAccommodationDTO;
+        return responseEntity;
     }
 
     @GetMapping("/getAccommodation/{uuid}") //Modificado y comprobado
