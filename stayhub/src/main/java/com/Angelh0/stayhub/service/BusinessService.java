@@ -6,6 +6,7 @@ import com.Angelh0.stayhub.entity.RoomEntity;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 public interface BusinessService {
     AccommodationEntity updateValues(AccommodationEntity accommodationEntity);
@@ -13,6 +14,8 @@ public interface BusinessService {
     List<String> filterRoomAvailable(List<RoomEntity> roomEntities);
     List<RoomEntity> filterCheckAvailability(List<String> uuidList, List<RoomEntity> roomEntities, LocalDate checkIn, LocalDate checkOut);
     List<ResponseAccommodationDTO> filterAccommodation(List<RoomEntity> available);
+    void validateAccommodationStatus(UUID uuidRoom);
+    void validateRoomStatus(UUID uuidRoom);
     void saveSearchResult(List<RoomEntity> availableRooms);
     void updateRoomValues();
 }

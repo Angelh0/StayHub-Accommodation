@@ -9,7 +9,7 @@ import com.Angelh0.stayhub.dto.search.SearchRoomDTO;
 import com.Angelh0.stayhub.entity.RoomEntity;
 import com.Angelh0.stayhub.entity.SearchResultEntity;
 import com.Angelh0.stayhub.entity.SearchRoomEntity;
-import com.Angelh0.stayhub.enums.StatusType;
+import com.Angelh0.stayhub.enums.RoomEnums.StatusType;
 import com.Angelh0.stayhub.exception.SearchException.DateValidate;
 import com.Angelh0.stayhub.repository.RoomRepository;
 import com.Angelh0.stayhub.repository.SearchResultRepository;

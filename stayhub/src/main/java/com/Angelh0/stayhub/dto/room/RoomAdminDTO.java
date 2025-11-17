@@ -1,7 +1,8 @@
 package com.Angelh0.stayhub.dto.room;
 
-import com.Angelh0.stayhub.enums.RoomType;
-import com.Angelh0.stayhub.enums.StatusType;
+import com.Angelh0.stayhub.enums.RoomEnums.RoomStatus;
+import com.Angelh0.stayhub.enums.RoomEnums.RoomType;
+import com.Angelh0.stayhub.enums.RoomEnums.StatusType;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,5 +21,6 @@ public class RoomAdminDTO {
     private RoomType type;
     private double price;
     private double areaInSquareMeters;
+    private RoomStatus roomStatus;
     private StatusType status;
 }

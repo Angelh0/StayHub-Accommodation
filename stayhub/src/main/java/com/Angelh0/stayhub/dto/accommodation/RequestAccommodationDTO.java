@@ -1,6 +1,6 @@
 package com.Angelh0.stayhub.dto.accommodation;
 
-import com.Angelh0.stayhub.enums.AccommodationType;
+import com.Angelh0.stayhub.enums.AccommodationEnums.AccommodationType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;

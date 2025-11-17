@@ -1,6 +1,6 @@
 package com.Angelh0.stayhub.dto.room;
 
-import com.Angelh0.stayhub.enums.RoomType;
+import com.Angelh0.stayhub.enums.RoomEnums.RoomType;
 import lombok.Getter;
 import lombok.Setter;
 

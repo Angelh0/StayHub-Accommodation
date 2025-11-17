@@ -50,6 +50,7 @@ public class RoomConverter {
         roomAdminDTO.setType(roomEntity.getType());
         roomAdminDTO.setPrice(roomEntity.getPrice());
         roomAdminDTO.setAreaInSquareMeters(roomEntity.getAreaInSquareMeters());
+        roomAdminDTO.setRoomStatus(roomEntity.getRoomStatus());
         roomAdminDTO.setStatus(roomEntity.getStatus());
 
         return roomAdminDTO;

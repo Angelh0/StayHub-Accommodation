@@ -7,7 +7,12 @@ import com.Angelh0.stayhub.entity.AccommodationEntity;
 import com.Angelh0.stayhub.entity.RoomEntity;
 import com.Angelh0.stayhub.entity.SearchResultEntity;
 import com.Angelh0.stayhub.entity.SearchRoomEntity;
-import com.Angelh0.stayhub.enums.StatusType;
+import com.Angelh0.stayhub.enums.AccommodationEnums.AccommodationStatus;
+import com.Angelh0.stayhub.enums.RoomEnums.RoomStatus;
+import com.Angelh0.stayhub.enums.RoomEnums.StatusType;
+import com.Angelh0.stayhub.exception.NotFoundException;
+import com.Angelh0.stayhub.exception.RoomException.RoomContainsReservation;
+import com.Angelh0.stayhub.grpcClient.GrpcClientFutureReservation;
 import com.Angelh0.stayhub.grpcClient.GrpcClientGetAvailability;
 import com.Angelh0.stayhub.repository.AccommodationRepository;
 import com.Angelh0.stayhub.repository.RoomRepository;
@@ -19,9 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Transactional
@@ -35,14 +38,16 @@ public class BusinessServiceImpl implements BusinessService {
     private final AccommodationRepository accommodationRepository;
     private final SearchRoomRepository searchRoomRepository;
     private final RoomRepository roomRepository;
+    private final GrpcClientFutureReservation grpcClientFutureReservation;
 
-    public BusinessServiceImpl(GrpcClientGetAvailability availabilityGrpcClient, AccommodationConverter accommodationConverter, SearchResultRepository searchResultRepository, AccommodationRepository accommodationRepository, SearchRoomRepository searchRoomRepository, RoomRepository roomRepository) {
+    public BusinessServiceImpl(GrpcClientGetAvailability availabilityGrpcClient, AccommodationConverter accommodationConverter, SearchResultRepository searchResultRepository, AccommodationRepository accommodationRepository, SearchRoomRepository searchRoomRepository, RoomRepository roomRepository, GrpcClientFutureReservation grpcClientFutureReservation) {
         this.availabilityGrpcClient = availabilityGrpcClient;
         this.accommodationConverter = accommodationConverter;
         this.searchResultRepository = searchResultRepository;
         this.accommodationRepository = accommodationRepository;
         this.searchRoomRepository = searchRoomRepository;
         this.roomRepository = roomRepository;
+        this.grpcClientFutureReservation = grpcClientFutureReservation;
     }
 
     @Override
@@ -65,7 +70,7 @@ public class BusinessServiceImpl implements BusinessService {
         for (RoomAvailabilityDTO roomAvailability : availabilityList) {
             if (roomAvailability.isAvailable()) {
                 for (RoomEntity roomEntity : roomEntities) {
-                    if (roomEntity.getUuid().equals(roomAvailability.getUuidRoom())) {
+                    if (roomEntity.getUuid().equals(roomAvailability.getUuidRoom()) && roomEntity.getRoomStatus() == RoomStatus.Active) {
                         available.add(roomEntity);
                         break;
                     }
@@ -230,4 +235,53 @@ public class BusinessServiceImpl implements BusinessService {
 
         return accommodationEntity;
     }
+
+        @Transactional
+        @Override
+        public void validateAccommodationStatus(UUID uuidRoom) {
+
+        Optional<RoomEntity> room = roomRepository.findByUuid(uuidRoom);
+
+        if (room.isPresent()) {
+            boolean active = false;
+            RoomEntity roomEntity = room.get();
+            AccommodationEntity accommodation = roomEntity.getAccommodation();
+
+            for (RoomEntity rooms : accommodation.getRooms()) {
+                if ((rooms.getRoomStatus() == RoomStatus.Active)) {
+                    active = true;
+                    break;
+                }
+            }
+
+            if (active) {
+                if (accommodation.getStatus() != AccommodationStatus.Draft) {
+                    accommodation.setStatus(AccommodationStatus.Active);
+                }
+            } else if (accommodation.getStatus() != AccommodationStatus.Draft){
+                accommodation.setStatus(AccommodationStatus.Temporarily_closed);
+            }
+
+            accommodationRepository.save(accommodation);
+
+        } else {
+            throw new NotFoundException("No se ha encontrado ningun alojamiento con el UUID introducido");
+        }
+    }
+
+    @Override
+    public void validateRoomStatus(UUID uuidRoom) {
+
+        Optional<RoomEntity> room = roomRepository.findByUuid(uuidRoom);
+
+        if (room.isPresent()) {
+            RoomAvailabilityDTO availabilityDTO = grpcClientFutureReservation.getFutureReservation(room.get().getUuid());
+            if (availabilityDTO.isAvailable()) {
+                throw new RoomContainsReservation("La habitacion seleccionada, contiene reservas activas posteriores a la fecha actual");
+            }
+        } else {
+            throw new NotFoundException("No se ha encontrado ninguna habitacion con el UUID introducido");
+        }
+    }
+
 }

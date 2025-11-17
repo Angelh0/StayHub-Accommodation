@@ -30,6 +30,7 @@ public class AccommodationConverter {
         responseAccommodationDTO.setAvailability(accommodationEntity.getAvailability());
         responseAccommodationDTO.setPriceMax(accommodationEntity.getPriceMax());
         responseAccommodationDTO.setPriceMin(accommodationEntity.getPriceMin());
+
         return responseAccommodationDTO;
     }
 
@@ -46,6 +47,7 @@ public class AccommodationConverter {
         accommodationDTO.setAvailability(accommodationEntity.getAvailability());
         accommodationDTO.setPriceMax(accommodationEntity.getPriceMax());
         accommodationDTO.setPriceMin(accommodationEntity.getPriceMin());
+        accommodationDTO.setStatus(accommodationEntity.getStatus());
 
         accommodationDTO.setRooms(
                 accommodationEntity.getRooms()

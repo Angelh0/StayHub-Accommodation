@@ -1,6 +1,6 @@
 package com.Angelh0.stayhub.dto.accommodation;
 
-import com.Angelh0.stayhub.enums.AccommodationType;
+import com.Angelh0.stayhub.enums.AccommodationEnums.AccommodationType;
 import lombok.Getter;
 import lombok.Setter;
 

@@ -1,7 +1,9 @@
 package com.Angelh0.stayhub.exception;
 
 import com.Angelh0.stayhub.exception.AccommodationException.AccommodationContainsRoom;
+import com.Angelh0.stayhub.exception.AccommodationException.AccommodationEmptyValues;
 import com.Angelh0.stayhub.exception.RoomException.RoomContainsReservation;
+import com.Angelh0.stayhub.exception.SearchException.DateValid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -55,6 +57,26 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RoomContainsReservation.class)
     public ResponseEntity<ErrorResponse> containsReservation(RoomContainsReservation e) {
         ErrorResponse errorResponse = new ErrorResponse("CONTAINS_RESERVATION",
+                e.getMessage(),
+                HttpStatus.CONFLICT,
+                LocalDateTime.now());
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(AccommodationEmptyValues.class)
+    public ResponseEntity<ErrorResponse> emptyValues(AccommodationEmptyValues e) {
+        ErrorResponse errorResponse = new ErrorResponse("EMPTY_VALUES",
+                e.getMessage(),
+                HttpStatus.BAD_REQUEST,
+                LocalDateTime.now());
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(DateValid.class)
+    public ResponseEntity<ErrorResponse> dateValidate(DateValid e) {
+        ErrorResponse errorResponse = new ErrorResponse("CONFLICT_DATES",
                 e.getMessage(),
                 HttpStatus.CONFLICT,
                 LocalDateTime.now());

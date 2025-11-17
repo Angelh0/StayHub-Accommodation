@@ -6,26 +6,17 @@ import com.Angelh0.stayhub.dto.accommodation.RequestAccommodationDTO;
 import com.Angelh0.stayhub.dto.accommodation.ResponseAccommodationDTO;
 import com.Angelh0.stayhub.dto.accommodation.UpdateAccommodationDTO;
 import com.Angelh0.stayhub.entity.AccommodationEntity;
-import com.Angelh0.stayhub.entity.RoomEntity;
 import com.Angelh0.stayhub.exception.AccommodationException.AccommodationContainsRoom;
-import com.Angelh0.stayhub.exception.ErrorResponse;
-import com.Angelh0.stayhub.exception.GlobalExceptionHandler;
+import com.Angelh0.stayhub.exception.AccommodationException.AccommodationEmptyValues;
 import com.Angelh0.stayhub.exception.NotFoundException;
 import com.Angelh0.stayhub.repository.AccommodationRepository;
 import com.Angelh0.stayhub.service.AccommodationService;
 import com.Angelh0.stayhub.service.BusinessService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.crossstore.ChangeSetPersister;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.io.NotActiveException;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class AccommodationServiceImpl implements AccommodationService {
@@ -72,10 +63,16 @@ public class AccommodationServiceImpl implements AccommodationService {
             AccommodationEntity accommodation = optionalAccommodation.get();
 
             if (updateAccommodationDTO.getName() != null) {
+                if (updateAccommodationDTO.getName().trim().isEmpty()) {
+                    throw new AccommodationEmptyValues("El nombre no puede estar vacio");
+                }
                 accommodation.setName(updateAccommodationDTO.getName());
             }
 
             if (updateAccommodationDTO.getDescription() != null) {
+                if (updateAccommodationDTO.getDescription().trim().isEmpty()) {
+                    throw new AccommodationEmptyValues("La descripcion no puede estar vacia");
+                }
                 accommodation.setDescription(updateAccommodationDTO.getDescription());
             }
 
@@ -83,10 +80,7 @@ public class AccommodationServiceImpl implements AccommodationService {
 
             return accommodationConverter.responseToDTO(accommodation);
         }
-
-        else {
-            throw new NotFoundException("No se ha encontrado ningun alojamiento con el UUID introducido");
-        }
+        throw new NotFoundException("No se ha encontrado ningun alojamiento con el UUID introducido");
     }
 
 

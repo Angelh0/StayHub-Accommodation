@@ -1,7 +1,8 @@
 package com.Angelh0.stayhub.entity;
 
-import com.Angelh0.stayhub.enums.RoomType;
-import com.Angelh0.stayhub.enums.StatusType;
+import com.Angelh0.stayhub.enums.RoomEnums.RoomStatus;
+import com.Angelh0.stayhub.enums.RoomEnums.RoomType;
+import com.Angelh0.stayhub.enums.RoomEnums.StatusType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -42,6 +43,10 @@ public class RoomEntity {
 
     @Column
     private double areaInSquareMeters;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "RoomStatus")
+    private RoomStatus roomStatus = RoomStatus.Active;
 
     @Enumerated(EnumType.STRING)
     @Column(name="Statustype")

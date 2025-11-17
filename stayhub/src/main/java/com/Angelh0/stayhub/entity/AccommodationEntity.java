@@ -1,6 +1,7 @@
 package com.Angelh0.stayhub.entity;
 
-import com.Angelh0.stayhub.enums.AccommodationType;
+import com.Angelh0.stayhub.enums.AccommodationEnums.AccommodationStatus;
+import com.Angelh0.stayhub.enums.AccommodationEnums.AccommodationType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -48,6 +49,10 @@ public class AccommodationEntity {
     @Column
     private Double priceMin;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "AccommodationStatus")
+    private AccommodationStatus status;
+
     @OneToMany(mappedBy = "accommodation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<RoomEntity> rooms;
 
@@ -57,5 +62,6 @@ public class AccommodationEntity {
         if (uuid == null) {
             uuid = UUID.randomUUID();
         }
+        status = AccommodationStatus.Draft;
     }
 }

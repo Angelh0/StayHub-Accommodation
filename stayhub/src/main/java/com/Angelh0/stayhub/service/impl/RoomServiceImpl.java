@@ -3,7 +3,6 @@ package com.Angelh0.stayhub.service.impl;
 import com.Angelh0.stayhub.converter.RoomConverter;
 import com.Angelh0.stayhub.dto.room.*;
 import com.Angelh0.stayhub.entity.RoomEntity;
-import com.Angelh0.stayhub.enums.StatusType;
 import com.Angelh0.stayhub.exception.NotFoundException;
 import com.Angelh0.stayhub.exception.RoomException.RoomContainsReservation;
 import com.Angelh0.stayhub.grpcClient.GrpcClientFutureReservation;
@@ -11,14 +10,12 @@ import com.Angelh0.stayhub.repository.AccommodationRepository;
 import com.Angelh0.stayhub.repository.RoomRepository;
 import com.Angelh0.stayhub.service.BusinessService;
 import com.Angelh0.stayhub.service.RoomService;
-import com.checkAvailability.grpc.ReservationResponse;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import com.Angelh0.stayhub.entity.AccommodationEntity;
 
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -56,6 +53,7 @@ public class RoomServiceImpl implements RoomService {
             businessService.updateValues(accommodation);
             room = roomRepository.save(room);
             roomDTO = roomConverter.convertEntityToDTO(room);
+            businessService.validateAccommodationStatus(roomDTO.getUuid());
             return roomDTO;
         }
         return null;
@@ -94,11 +92,16 @@ public class RoomServiceImpl implements RoomService {
                 entity.setPrice(updateRoomDTO.getPrice());
             }
 
+            if (updateRoomDTO.getRoomStatus() != null) {
+                businessService.validateRoomStatus(uuid);
+                entity.setRoomStatus(updateRoomDTO.getRoomStatus());
+                businessService.validateAccommodationStatus(uuid);
+            }
+
             roomRepository.save(entity);
 
             return roomConverter.convertEntityToDTO(entity);
-        }
-        throw new NotFoundException("No se ha encontrado ninguna habitacion con el UUID introducido");
+        } throw new NotFoundException("No se ha encontrado ninguna habitacion con el UUID introducido");
     }
 
     @Override
@@ -123,9 +126,11 @@ public class RoomServiceImpl implements RoomService {
         if (room.isPresent()) {
             RoomAvailabilityDTO availabilityDTO = grpcClientFutureReservation.getFutureReservation(room.get().getUuid());
             if (availabilityDTO.isAvailable()) {
-                throw new RoomContainsReservation("La habitacion seleccionada, contiene reservas activas posteriores a la fecha actual." + LocalDate.now());
+                throw new RoomContainsReservation("La habitacion seleccionada, contiene reservas activas posteriores a la fecha actual.");
             }
             roomRepository.deleteByUuid(uuid);
+        } else {
+            throw new NotFoundException("No se ha encontrado ninguna habitacion con el UUID introducido");
         }
     }
 }
