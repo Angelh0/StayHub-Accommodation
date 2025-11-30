@@ -1,0 +1,46 @@
+2025-11-19 01:48:47.745352Z jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Error de Sintaxis en sentencia SQL "\000d\000a    create table accommodation_calendar (\000d\000a        id bigint not null,\000d\000a        [*]month integer check ((month>=1) and (month<=12)),\000d\000a        uuid_accommodation uuid,\000d\000a        uuid_calendar uuid,\000d\000a        accommodation_id bigint,\000d\000a        primary key (id)\000d\000a    )"; se esperaba "identifier"
+Syntax error in SQL statement "\000d\000a    create table accommodation_calendar (\000d\000a        id bigint not null,\000d\000a        [*]month integer check ((month>=1) and (month<=12)),\000d\000a        uuid_accommodation uuid,\000d\000a        uuid_calendar uuid,\000d\000a        accommodation_id bigint,\000d\000a        primary key (id)\000d\000a    )"; expected "identifier"; SQL statement:
+
+    create table accommodation_calendar (
+        id bigint not null,
+        month integer check ((month>=1) and (month<=12)),
+        uuid_accommodation uuid,
+        uuid_calendar uuid,
+        accommodation_id bigint,
+        primary key (id)
+    ) [42001-224]
+2025-11-19 01:49:35.268706Z jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Error de Sintaxis en sentencia SQL "\000d\000a    create table accommodation_calendar (\000d\000a        id bigint not null,\000d\000a        [*]month integer check ((month>=1) and (month<=12)),\000d\000a        uuid_accommodation uuid,\000d\000a        uuid_calendar uuid,\000d\000a        accommodation_id bigint,\000d\000a        primary key (id)\000d\000a    )"; se esperaba "identifier"
+Syntax error in SQL statement "\000d\000a    create table accommodation_calendar (\000d\000a        id bigint not null,\000d\000a        [*]month integer check ((month>=1) and (month<=12)),\000d\000a        uuid_accommodation uuid,\000d\000a        uuid_calendar uuid,\000d\000a        accommodation_id bigint,\000d\000a        primary key (id)\000d\000a    )"; expected "identifier"; SQL statement:
+
+    create table accommodation_calendar (
+        id bigint not null,
+        month integer check ((month>=1) and (month<=12)),
+        uuid_accommodation uuid,
+        uuid_calendar uuid,
+        accommodation_id bigint,
+        primary key (id)
+    ) [42001-224]
+2025-11-19 01:56:55.944689Z jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Error de Sintaxis en sentencia SQL "\000d\000a    create table accommodation_calendar (\000d\000a        id bigint not null,\000d\000a        [*]month integer check ((month>=1) and (month<=12)),\000d\000a        uuid_calendar uuid,\000d\000a        accommodation_id bigint,\000d\000a        primary key (id)\000d\000a    )"; se esperaba "identifier"
+Syntax error in SQL statement "\000d\000a    create table accommodation_calendar (\000d\000a        id bigint not null,\000d\000a        [*]month integer check ((month>=1) and (month<=12)),\000d\000a        uuid_calendar uuid,\000d\000a        accommodation_id bigint,\000d\000a        primary key (id)\000d\000a    )"; expected "identifier"; SQL statement:
+
+    create table accommodation_calendar (
+        id bigint not null,
+        month integer check ((month>=1) and (month<=12)),
+        uuid_calendar uuid,
+        accommodation_id bigint,
+        primary key (id)
+    ) [42001-224]
+2025-11-19 02:04:12.804022Z jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Error de Sintaxis en sentencia SQL "\000d\000a    create table accommodation_calendar (\000d\000a        id bigint not null,\000d\000a        [*]month integer not null check ((month>=1) and (month<=12)),\000d\000a        uuid_calendar uuid,\000d\000a        accommodation_id bigint,\000d\000a        primary key (id)\000d\000a    )"; se esperaba "identifier"
+Syntax error in SQL statement "\000d\000a    create table accommodation_calendar (\000d\000a        id bigint not null,\000d\000a        [*]month integer not null check ((month>=1) and (month<=12)),\000d\000a        uuid_calendar uuid,\000d\000a        accommodation_id bigint,\000d\000a        primary key (id)\000d\000a    )"; expected "identifier"; SQL statement:
+
+    create table accommodation_calendar (
+        id bigint not null,
+        month integer not null check ((month>=1) and (month<=12)),
+        uuid_calendar uuid,
+        accommodation_id bigint,
+        primary key (id)
+    ) [42001-224]

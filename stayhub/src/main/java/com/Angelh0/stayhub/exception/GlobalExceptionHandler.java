@@ -84,4 +84,13 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
 
+    @ExceptionHandler(InvalidValues.class)
+    public ResponseEntity<ErrorResponse> dateValidate(InvalidValues e) {
+        ErrorResponse errorResponse = new ErrorResponse("INVALID_VALUES",
+                e.getMessage(),
+                HttpStatus.CONFLICT,
+                LocalDateTime.now());
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+    }
 }

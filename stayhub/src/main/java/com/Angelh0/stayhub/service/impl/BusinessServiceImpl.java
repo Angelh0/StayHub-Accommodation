@@ -3,21 +3,19 @@ package com.Angelh0.stayhub.service.impl;
 import com.Angelh0.stayhub.converter.AccommodationConverter;
 import com.Angelh0.stayhub.dto.accommodation.ResponseAccommodationDTO;
 import com.Angelh0.stayhub.dto.room.RoomAvailabilityDTO;
-import com.Angelh0.stayhub.entity.AccommodationEntity;
-import com.Angelh0.stayhub.entity.RoomEntity;
-import com.Angelh0.stayhub.entity.SearchResultEntity;
-import com.Angelh0.stayhub.entity.SearchRoomEntity;
+import com.Angelh0.stayhub.entity.*;
 import com.Angelh0.stayhub.enums.AccommodationEnums.AccommodationStatus;
 import com.Angelh0.stayhub.enums.RoomEnums.RoomStatus;
 import com.Angelh0.stayhub.enums.RoomEnums.StatusType;
 import com.Angelh0.stayhub.exception.NotFoundException;
 import com.Angelh0.stayhub.exception.RoomException.RoomContainsReservation;
-import com.Angelh0.stayhub.grpcClient.GrpcClientFutureReservation;
 import com.Angelh0.stayhub.grpcClient.GrpcClientGetAvailability;
+import com.Angelh0.stayhub.grpcClient.GrpcClientRoomStatusChange;
 import com.Angelh0.stayhub.repository.AccommodationRepository;
 import com.Angelh0.stayhub.repository.RoomRepository;
 import com.Angelh0.stayhub.repository.SearchResultRepository;
 import com.Angelh0.stayhub.repository.SearchRoomRepository;
+import com.Angelh0.stayhub.service.AccommodationDraftService;
 import com.Angelh0.stayhub.service.BusinessService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -32,22 +30,25 @@ public class BusinessServiceImpl implements BusinessService {
 
     private final GrpcClientGetAvailability availabilityGrpcClient;
 
-
     private final AccommodationConverter accommodationConverter;
     private final SearchResultRepository searchResultRepository;
     private final AccommodationRepository accommodationRepository;
     private final SearchRoomRepository searchRoomRepository;
     private final RoomRepository roomRepository;
-    private final GrpcClientFutureReservation grpcClientFutureReservation;
+    private final AccommodationDraftService accommodationDraftService;
+    private final GrpcClientRoomStatusChange grpRoomStatusChange;
 
-    public BusinessServiceImpl(GrpcClientGetAvailability availabilityGrpcClient, AccommodationConverter accommodationConverter, SearchResultRepository searchResultRepository, AccommodationRepository accommodationRepository, SearchRoomRepository searchRoomRepository, RoomRepository roomRepository, GrpcClientFutureReservation grpcClientFutureReservation) {
+
+    public BusinessServiceImpl(GrpcClientGetAvailability availabilityGrpcClient, AccommodationConverter accommodationConverter, SearchResultRepository searchResultRepository, AccommodationRepository accommodationRepository, SearchRoomRepository searchRoomRepository, RoomRepository roomRepository, AccommodationDraftService accommodationDraftService, GrpcClientRoomStatusChange roomStatusChange, GrpcClientRoomStatusChange grpRoomStatusChange) {
         this.availabilityGrpcClient = availabilityGrpcClient;
         this.accommodationConverter = accommodationConverter;
         this.searchResultRepository = searchResultRepository;
         this.accommodationRepository = accommodationRepository;
         this.searchRoomRepository = searchRoomRepository;
         this.roomRepository = roomRepository;
-        this.grpcClientFutureReservation = grpcClientFutureReservation;
+        this.accommodationDraftService = accommodationDraftService;
+        this.grpRoomStatusChange = grpRoomStatusChange;
+
     }
 
     @Override
@@ -91,19 +92,23 @@ public class BusinessServiceImpl implements BusinessService {
         for (AccommodationEntity accommodationEntity : accommodationEntities) {
             boolean find = false;
 
-           for (RoomEntity room : available) {
-               if (room.getAccommodation().getUuid().equals(accommodationEntity.getUuid())) {
-                   find = true;
-                      break;
-               }
+            for (RoomEntity room : available) {
+                accommodationDraftService.checkPublishAccommodation(room.getAccommodation().getUuid());
+                boolean checkStay = accommodationDraftService.checkStayAccommodation(room.getAccommodation().getUuid());
+                boolean checkMonthAvailable = accommodationDraftService.checkMonthAvailability(room.getAccommodation().getUuid());
+                if (room.getAccommodation().getUuid().equals(accommodationEntity.getUuid()) && accommodationEntity.getStatus() == AccommodationStatus.Active && checkStay && checkMonthAvailable) {
+                    find = true;
+                    break;
+                }
             }
-           if (find) {
-               accommodation.add(accommodationConverter.responseToDTO(accommodationEntity));
-           }
+            if (find) {
+                accommodation.add(accommodationConverter.responseToDTO(accommodationEntity));
+            }
         }
 
         return accommodation;
     }
+
 
     @Override
     public void saveSearchResult(List<RoomEntity> availableRooms) {
@@ -168,7 +173,6 @@ public class BusinessServiceImpl implements BusinessService {
         }
     }
 
-
     @Override
     public void updateAccommodationValues() {
 
@@ -188,7 +192,7 @@ public class BusinessServiceImpl implements BusinessService {
                     if (room.getAccommodation().getUuid().equals(accommodation.getUuid())) {
                         available++;
 
-                        if (priceMax == null || room.getPrice() > priceMax  ) {
+                        if (priceMax == null || room.getPrice() > priceMax) {
                             priceMax = room.getPrice();
                         }
                         if (priceMin == null || room.getPrice() < priceMin) {
@@ -236,9 +240,9 @@ public class BusinessServiceImpl implements BusinessService {
         return accommodationEntity;
     }
 
-        @Transactional
-        @Override
-        public void validateAccommodationStatus(UUID uuidRoom) {
+    @Transactional
+    @Override
+    public void validateAccommodationStatus(UUID uuidRoom) {
 
         Optional<RoomEntity> room = roomRepository.findByUuid(uuidRoom);
 
@@ -258,8 +262,8 @@ public class BusinessServiceImpl implements BusinessService {
                 if (accommodation.getStatus() != AccommodationStatus.Draft) {
                     accommodation.setStatus(AccommodationStatus.Active);
                 }
-            } else if (accommodation.getStatus() != AccommodationStatus.Draft){
-                accommodation.setStatus(AccommodationStatus.Temporarily_closed);
+            } else if (accommodation.getStatus() != AccommodationStatus.Draft) {
+                accommodation.setStatus(AccommodationStatus.Closed);
             }
 
             accommodationRepository.save(accommodation);
@@ -270,18 +274,17 @@ public class BusinessServiceImpl implements BusinessService {
     }
 
     @Override
-    public void validateRoomStatus(UUID uuidRoom) {
+    public void validateRoomStatus(UUID uuidRoom, LocalDate blockStartDate, LocalDate blockEndDate) {
 
         Optional<RoomEntity> room = roomRepository.findByUuid(uuidRoom);
 
         if (room.isPresent()) {
-            RoomAvailabilityDTO availabilityDTO = grpcClientFutureReservation.getFutureReservation(room.get().getUuid());
-            if (availabilityDTO.isAvailable()) {
-                throw new RoomContainsReservation("La habitacion seleccionada, contiene reservas activas posteriores a la fecha actual");
+            RoomAvailabilityDTO availabilityDTO = grpRoomStatusChange.checkStatusRoom(uuidRoom, blockStartDate, blockEndDate);
+            if (!availabilityDTO.isAvailable()) {
+                throw new RoomContainsReservation(availabilityDTO.getMessage());
             }
         } else {
             throw new NotFoundException("No se ha encontrado ninguna habitacion con el UUID introducido");
         }
     }
-
 }

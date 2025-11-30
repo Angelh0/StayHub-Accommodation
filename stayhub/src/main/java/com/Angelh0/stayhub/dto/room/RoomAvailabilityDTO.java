@@ -11,4 +11,5 @@ public class RoomAvailabilityDTO {
 
     private UUID uuidRoom;
     private boolean available;
+    private String message;
 }

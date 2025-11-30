@@ -1,6 +1,7 @@
 package com.Angelh0.stayhub.service;
 
 import com.Angelh0.stayhub.dto.accommodation.ResponseAccommodationDTO;
+import com.Angelh0.stayhub.dto.room.RoomDTO;
 import com.Angelh0.stayhub.entity.AccommodationEntity;
 import com.Angelh0.stayhub.entity.RoomEntity;
 
@@ -15,7 +16,7 @@ public interface BusinessService {
     List<RoomEntity> filterCheckAvailability(List<String> uuidList, List<RoomEntity> roomEntities, LocalDate checkIn, LocalDate checkOut);
     List<ResponseAccommodationDTO> filterAccommodation(List<RoomEntity> available);
     void validateAccommodationStatus(UUID uuidRoom);
-    void validateRoomStatus(UUID uuidRoom);
+    void validateRoomStatus(UUID uuidRoom, LocalDate blockStartDate, LocalDate blockEndDate);
     void saveSearchResult(List<RoomEntity> availableRooms);
     void updateRoomValues();
 }

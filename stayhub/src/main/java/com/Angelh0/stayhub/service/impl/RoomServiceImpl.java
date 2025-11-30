@@ -3,11 +3,15 @@ package com.Angelh0.stayhub.service.impl;
 import com.Angelh0.stayhub.converter.RoomConverter;
 import com.Angelh0.stayhub.dto.room.*;
 import com.Angelh0.stayhub.entity.RoomEntity;
+import com.Angelh0.stayhub.enums.RoomEnums.RoomStatus;
 import com.Angelh0.stayhub.exception.NotFoundException;
 import com.Angelh0.stayhub.exception.RoomException.RoomContainsReservation;
+import com.Angelh0.stayhub.exception.SearchException.DateValid;
+import com.Angelh0.stayhub.exception.SearchException.DateValidate;
 import com.Angelh0.stayhub.grpcClient.GrpcClientFutureReservation;
 import com.Angelh0.stayhub.repository.AccommodationRepository;
 import com.Angelh0.stayhub.repository.RoomRepository;
+import com.Angelh0.stayhub.service.AccommodationDraftService;
 import com.Angelh0.stayhub.service.BusinessService;
 import com.Angelh0.stayhub.service.RoomService;
 import jakarta.transaction.Transactional;
@@ -39,6 +43,9 @@ public class RoomServiceImpl implements RoomService {
     @Autowired
     private GrpcClientFutureReservation grpcClientFutureReservation;
 
+    @Autowired
+    private AccommodationDraftService accommodationDraftService;
+
 
     @Override
     public RoomDTO createRoom(RoomDTO roomDTO, UUID uuid) {
@@ -54,6 +61,7 @@ public class RoomServiceImpl implements RoomService {
             room = roomRepository.save(room);
             roomDTO = roomConverter.convertEntityToDTO(room);
             businessService.validateAccommodationStatus(roomDTO.getUuid());
+            accommodationDraftService.checkAddRooms(accommodation.getUuid());
             return roomDTO;
         }
         return null;
@@ -92,9 +100,12 @@ public class RoomServiceImpl implements RoomService {
                 entity.setPrice(updateRoomDTO.getPrice());
             }
 
-            if (updateRoomDTO.getRoomStatus() != null) {
-                businessService.validateRoomStatus(uuid);
-                entity.setRoomStatus(updateRoomDTO.getRoomStatus());
+            if (updateRoomDTO.getRoomStatus() != RoomStatus.Active) {
+                if (updateRoomDTO.getBlockStartDate() == null || updateRoomDTO.getBlockEndDate() == null) {
+                    throw new NotFoundException("Los bloqueos deben contener una fecha de inicio y de fin");
+                }
+                DateValidate.validateBlockDate(updateRoomDTO.getBlockStartDate(), updateRoomDTO.getBlockEndDate());
+                businessService.validateRoomStatus(uuid, updateRoomDTO.getBlockStartDate(), updateRoomDTO.getBlockEndDate());
                 businessService.validateAccommodationStatus(uuid);
             }
 

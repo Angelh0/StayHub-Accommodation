@@ -9,5 +9,4 @@ import lombok.Setter;
 public class UpdateAccommodationDTO {
     private String name;
     private String description;
-    private AccommodationStatus status;
 }

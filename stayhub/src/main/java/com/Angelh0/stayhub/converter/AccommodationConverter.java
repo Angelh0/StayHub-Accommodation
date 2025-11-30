@@ -3,7 +3,7 @@ package com.Angelh0.stayhub.converter;
 import com.Angelh0.stayhub.dto.accommodation.AccommodationDTO;
 import com.Angelh0.stayhub.dto.accommodation.RequestAccommodationDTO;
 import com.Angelh0.stayhub.dto.accommodation.ResponseAccommodationDTO;
-import com.Angelh0.stayhub.dto.accommodation.UpdateAccommodationDTO;
+import com.Angelh0.stayhub.entity.AccommodationCalendarEntity;
 import com.Angelh0.stayhub.entity.AccommodationEntity;
 import org.springframework.stereotype.Component;
 
@@ -11,10 +11,12 @@ import org.springframework.stereotype.Component;
 public class AccommodationConverter {
 
     private final RoomConverter roomConverter;
+    private final AccommodationCalendarConverter calendarConverter;
 
-    public AccommodationConverter(RoomConverter roomConverter) {
+    public AccommodationConverter(RoomConverter roomConverter, AccommodationCalendarConverter calendarConverter) {
 
         this.roomConverter = roomConverter;
+        this.calendarConverter = calendarConverter;
     }
 
     // Converter sin listado de alojamientos
@@ -48,6 +50,10 @@ public class AccommodationConverter {
         accommodationDTO.setPriceMax(accommodationEntity.getPriceMax());
         accommodationDTO.setPriceMin(accommodationEntity.getPriceMin());
         accommodationDTO.setStatus(accommodationEntity.getStatus());
+        accommodationDTO.setMinStay(accommodationEntity.getMinStay());
+        accommodationDTO.setMaxStay(accommodationEntity.getMaxStay());
+        accommodationDTO.setAvailabilityCalendar(calendarConverter.entityToDTO(accommodationEntity.getCalendar()));
+        accommodationDTO.setPhotos(accommodationEntity.getPhotos());
 
         accommodationDTO.setRooms(
                 accommodationEntity.getRooms()

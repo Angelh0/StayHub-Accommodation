@@ -30,7 +30,7 @@ public class SearchServiceImpl implements SearchService {
     private final SearchRoomRepository searchRoomRepository;
     private final SearchConverter searchConverter;
     private final RoomRepository roomRepository;
-    private final RoomConverter roomConverter;;
+    private final RoomConverter roomConverter;
     private final BusinessService businessService;
     private final SearchResultRepository searchResultRepository;
 
@@ -98,7 +98,6 @@ public class SearchServiceImpl implements SearchService {
         searchRoomEntity.setCapacity(capacity);
         searchRoomEntity.setCheckIn(checkIn);
         searchRoomEntity.setCheckOut(checkOut);
-
 
         searchRoomRepository.deleteAll();
         searchRoomRepository.save(searchRoomEntity);

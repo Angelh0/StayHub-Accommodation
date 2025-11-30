@@ -1,15 +1,19 @@
 package com.Angelh0.stayhub.service.impl;
 
 import com.Angelh0.stayhub.converter.AccommodationConverter;
+import com.Angelh0.stayhub.converter.RoomConverter;
 import com.Angelh0.stayhub.dto.accommodation.AccommodationDTO;
 import com.Angelh0.stayhub.dto.accommodation.RequestAccommodationDTO;
 import com.Angelh0.stayhub.dto.accommodation.ResponseAccommodationDTO;
 import com.Angelh0.stayhub.dto.accommodation.UpdateAccommodationDTO;
+import com.Angelh0.stayhub.dto.room.RoomDTO;
 import com.Angelh0.stayhub.entity.AccommodationEntity;
+import com.Angelh0.stayhub.entity.RoomEntity;
 import com.Angelh0.stayhub.exception.AccommodationException.AccommodationContainsRoom;
 import com.Angelh0.stayhub.exception.AccommodationException.AccommodationEmptyValues;
 import com.Angelh0.stayhub.exception.NotFoundException;
 import com.Angelh0.stayhub.repository.AccommodationRepository;
+import com.Angelh0.stayhub.service.AccommodationDraftService;
 import com.Angelh0.stayhub.service.AccommodationService;
 import com.Angelh0.stayhub.service.BusinessService;
 import jakarta.transaction.Transactional;
@@ -30,12 +34,19 @@ public class AccommodationServiceImpl implements AccommodationService {
     @Autowired
     private BusinessService businessService;
 
+    @Autowired
+    private AccommodationDraftService accommodationDraftService;
+
+    @Autowired
+    private RoomConverter roomConverter;
+
     @Override
     public RequestAccommodationDTO createAccommodation(RequestAccommodationDTO requestAccommodationDTO) {
 
         AccommodationEntity accommodationEntity = accommodationConverter.toEntityRequest(requestAccommodationDTO);
         accommodationEntity = accommodationRepository.save(accommodationEntity);
         requestAccommodationDTO = accommodationConverter.toDtoRequest(accommodationEntity);
+        accommodationDraftService.checkBasicCreate(requestAccommodationDTO.getUuid());
         return requestAccommodationDTO;
     }
 
@@ -129,5 +140,16 @@ public class AccommodationServiceImpl implements AccommodationService {
 
         return accDTO;
     }
+
+    @Override
+    public List<RoomDTO> getRooms(List<RoomEntity> rooms) {
+        List<RoomDTO> result = new ArrayList<>();
+
+        for (RoomEntity room : rooms) {
+            result.add(roomConverter.convertEntityToDTO(room));
+        }
+        return result;
+    }
+
 
 }
