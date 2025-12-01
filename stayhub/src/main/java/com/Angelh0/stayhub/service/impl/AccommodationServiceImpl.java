@@ -6,16 +6,19 @@ import com.Angelh0.stayhub.dto.accommodation.AccommodationDTO;
 import com.Angelh0.stayhub.dto.accommodation.RequestAccommodationDTO;
 import com.Angelh0.stayhub.dto.accommodation.ResponseAccommodationDTO;
 import com.Angelh0.stayhub.dto.accommodation.UpdateAccommodationDTO;
+import com.Angelh0.stayhub.dto.room.RoomAvailabilityDTO;
 import com.Angelh0.stayhub.dto.room.RoomDTO;
 import com.Angelh0.stayhub.entity.AccommodationEntity;
 import com.Angelh0.stayhub.entity.RoomEntity;
 import com.Angelh0.stayhub.exception.AccommodationException.AccommodationContainsRoom;
 import com.Angelh0.stayhub.exception.AccommodationException.AccommodationEmptyValues;
 import com.Angelh0.stayhub.exception.NotFoundException;
+import com.Angelh0.stayhub.grpcClient.GrpcClientValidateCountry;
 import com.Angelh0.stayhub.repository.AccommodationRepository;
 import com.Angelh0.stayhub.service.AccommodationDraftService;
 import com.Angelh0.stayhub.service.AccommodationService;
 import com.Angelh0.stayhub.service.BusinessService;
+import com.checkAvailability.grpc.RoomAvailability;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -40,10 +43,17 @@ public class AccommodationServiceImpl implements AccommodationService {
     @Autowired
     private RoomConverter roomConverter;
 
+    @Autowired
+    private GrpcClientValidateCountry grpcClientValidateCountry;
+
     @Override
     public RequestAccommodationDTO createAccommodation(RequestAccommodationDTO requestAccommodationDTO) {
 
         AccommodationEntity accommodationEntity = accommodationConverter.toEntityRequest(requestAccommodationDTO);
+        RoomAvailabilityDTO validate = grpcClientValidateCountry.validateValues(requestAccommodationDTO.getCity(), requestAccommodationDTO.getCountry());
+        if (!validate.isAvailable()) {
+            throw new NotFoundException(validate.getMessage());
+        }
         accommodationEntity = accommodationRepository.save(accommodationEntity);
         requestAccommodationDTO = accommodationConverter.toDtoRequest(accommodationEntity);
         accommodationDraftService.checkBasicCreate(requestAccommodationDTO.getUuid());
