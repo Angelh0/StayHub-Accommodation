@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -41,4 +42,6 @@ public class RoomDTO {
 
     @NotNull
     private StatusType status;
+
+    private List<String> photos;
 }

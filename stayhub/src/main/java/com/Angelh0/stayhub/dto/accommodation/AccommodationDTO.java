@@ -31,9 +31,9 @@ public class AccommodationDTO {
     private Double priceMin;
 
     @Min(value = 1, message = "La estancia minima no puede ser inferior a 1")
-    private int minStay;
+    private Integer minStay;
 
-    private int maxStay;
+    private Integer maxStay;
     private AccommodationCalendarDTO availabilityCalendar;
     private List<String> photos;
     private List<RoomDTO> rooms;

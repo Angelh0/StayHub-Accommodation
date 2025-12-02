@@ -274,7 +274,7 @@ public class BusinessServiceImpl implements BusinessService {
     }
 
     @Override
-    public void validateRoomStatus(UUID uuidRoom, LocalDate blockStartDate, LocalDate blockEndDate) {
+    public void validateRoomStatus(UUID uuidRoom, String blockStartDate, String blockEndDate) {
 
         Optional<RoomEntity> room = roomRepository.findByUuid(uuidRoom);
 

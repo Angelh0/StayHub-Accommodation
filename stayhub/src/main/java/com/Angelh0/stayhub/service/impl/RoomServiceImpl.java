@@ -4,6 +4,7 @@ import com.Angelh0.stayhub.converter.RoomConverter;
 import com.Angelh0.stayhub.dto.room.*;
 import com.Angelh0.stayhub.entity.RoomEntity;
 import com.Angelh0.stayhub.enums.RoomEnums.RoomStatus;
+import com.Angelh0.stayhub.exception.InvalidValues;
 import com.Angelh0.stayhub.exception.NotFoundException;
 import com.Angelh0.stayhub.exception.RoomException.RoomContainsReservation;
 import com.Angelh0.stayhub.exception.SearchException.DateValid;
@@ -105,8 +106,13 @@ public class RoomServiceImpl implements RoomService {
                     throw new NotFoundException("Los bloqueos deben contener una fecha de inicio y de fin");
                 }
                 DateValidate.validateBlockDate(updateRoomDTO.getBlockStartDate(), updateRoomDTO.getBlockEndDate());
-                businessService.validateRoomStatus(uuid, updateRoomDTO.getBlockStartDate(), updateRoomDTO.getBlockEndDate());
+                businessService.validateRoomStatus(uuid, String.valueOf(updateRoomDTO.getBlockStartDate()), String.valueOf(updateRoomDTO.getBlockEndDate()));
                 businessService.validateAccommodationStatus(uuid);
+            }
+
+            if (updateRoomDTO.getPhotos() != null){
+                updateRoomDTO.setPhotos(updateRoomDTO.getPhotos());
+                updateRoomDTO.setPhotos(updateRoomDTO.getPhotos());
             }
 
             roomRepository.save(entity);

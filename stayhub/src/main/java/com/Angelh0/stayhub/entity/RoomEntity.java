@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -53,6 +54,10 @@ public class RoomEntity {
     private StatusType status;
 
     private double totalPrice;
+
+    @ElementCollection
+    @Column(name = "RoomPhotos")
+    private List<String> photos;
 
     @ManyToOne(fetch = FetchType.EAGER)
     private AccommodationEntity accommodation;

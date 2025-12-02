@@ -1,19 +1,26 @@
 package com.Angelh0.stayhub.service.impl;
 
+import com.Angelh0.stayhub.converter.AccommodationCalendarConverter;
 import com.Angelh0.stayhub.converter.AccommodationConverter;
 import com.Angelh0.stayhub.converter.RoomConverter;
+import com.Angelh0.stayhub.dto.DraftAccommodation.AccommodationCalendarDTO;
 import com.Angelh0.stayhub.dto.accommodation.AccommodationDTO;
 import com.Angelh0.stayhub.dto.accommodation.RequestAccommodationDTO;
 import com.Angelh0.stayhub.dto.accommodation.ResponseAccommodationDTO;
 import com.Angelh0.stayhub.dto.accommodation.UpdateAccommodationDTO;
 import com.Angelh0.stayhub.dto.room.RoomAvailabilityDTO;
 import com.Angelh0.stayhub.dto.room.RoomDTO;
+import com.Angelh0.stayhub.entity.AccommodationCalendarEntity;
+import com.Angelh0.stayhub.entity.AccommodationDraftEntity;
 import com.Angelh0.stayhub.entity.AccommodationEntity;
 import com.Angelh0.stayhub.entity.RoomEntity;
 import com.Angelh0.stayhub.exception.AccommodationException.AccommodationContainsRoom;
 import com.Angelh0.stayhub.exception.AccommodationException.AccommodationEmptyValues;
+import com.Angelh0.stayhub.exception.InvalidValues;
 import com.Angelh0.stayhub.exception.NotFoundException;
 import com.Angelh0.stayhub.grpcClient.GrpcClientValidateCountry;
+import com.Angelh0.stayhub.repository.AccommodationCalendarRepository;
+import com.Angelh0.stayhub.repository.AccommodationDraftRepository;
 import com.Angelh0.stayhub.repository.AccommodationRepository;
 import com.Angelh0.stayhub.service.AccommodationDraftService;
 import com.Angelh0.stayhub.service.AccommodationService;
@@ -45,6 +52,12 @@ public class AccommodationServiceImpl implements AccommodationService {
 
     @Autowired
     private GrpcClientValidateCountry grpcClientValidateCountry;
+    @Autowired
+    private AccommodationDraftRepository accommodationDraftRepository;
+    @Autowired
+    private AccommodationCalendarConverter accommodationCalendarConverter;
+    @Autowired
+    private AccommodationCalendarRepository accommodationCalendarRepository;
 
     @Override
     public RequestAccommodationDTO createAccommodation(RequestAccommodationDTO requestAccommodationDTO) {
@@ -97,6 +110,52 @@ public class AccommodationServiceImpl implements AccommodationService {
                 accommodation.setDescription(updateAccommodationDTO.getDescription());
             }
 
+            if (updateAccommodationDTO.getMinStay() != null) {
+                if (updateAccommodationDTO.getMinStay() != 0) {
+                    accommodation.setMinStay(updateAccommodationDTO.getMinStay());
+                }
+                if (updateAccommodationDTO.getMinStay() == 0) {
+                    throw new InvalidValues("La estancia minima no puede ser inferior a 1");
+                }
+            }
+
+            if (updateAccommodationDTO.getMaxStay() < accommodation.getMinStay()) {
+                if (updateAccommodationDTO.getMaxStay() > accommodation.getMinStay()) {
+                    accommodation.setMaxStay(updateAccommodationDTO.getMaxStay());
+                }
+                throw new AccommodationEmptyValues("La estancia maxima no puede ser inferior a la estancia minima");
+            }
+
+            if (updateAccommodationDTO.getCalendar() != null) {
+                AccommodationCalendarDTO calendarDTO = updateAccommodationDTO.getCalendar();
+
+                if (calendarDTO.getCalendarMonth() == null || calendarDTO.getCalendarMonth().isEmpty()) {
+                    throw new InvalidValues("El calendario debe contener mínimo 1 mes de disponibilidad");
+                }
+
+                if (accommodation.getCalendar() == null) {
+                    AccommodationCalendarEntity newCalendar = new AccommodationCalendarEntity();
+                    newCalendar.setAccommodation(accommodation);
+                    accommodation.setCalendar(newCalendar);
+                }
+
+                accommodation.getCalendar().setCalendarMonth(calendarDTO.getCalendarMonth());
+
+                accommodationCalendarRepository.save(accommodation.getCalendar());
+                accommodationRepository.save(accommodation);
+            }
+
+            if (updateAccommodationDTO.getPhotos() != null) {
+
+                if (updateAccommodationDTO.getPhotos().isEmpty()) {
+                    throw new InvalidValues("El alojamiento debe contener minimo 1 foto");
+                }
+                if (!updateAccommodationDTO.getPhotos().isEmpty()) {
+                    updateAccommodationDTO.setPhotos(updateAccommodationDTO.getPhotos());
+                }
+                accommodation.setPhotos(updateAccommodationDTO.getPhotos());
+            }
+
             accommodation = accommodationRepository.save(accommodation);
 
             return accommodationConverter.responseToDTO(accommodation);
@@ -107,7 +166,7 @@ public class AccommodationServiceImpl implements AccommodationService {
 
     @Override
     @Transactional
-    public void deleteAccommodation(UUID uuid){
+    public void deleteAccommodation(UUID uuid) {
 
         Optional<AccommodationEntity> accommodation = accommodationRepository.findByUuid(uuid);
 
@@ -116,13 +175,13 @@ public class AccommodationServiceImpl implements AccommodationService {
 
             if (!accommodationEntity.getRooms().isEmpty()) {
                 throw new AccommodationContainsRoom("No se puede eliminar un alojamiento sin borrar previamente sus habitaciones");
-            } else{
+            } else {
                 accommodationRepository.deleteByUuid(uuid);
             }
         } else {
             throw new NotFoundException("No se ha encontrado ningun alojamiento con el UUID introducido");
         }
-     }
+    }
 
     @Override
     public AccommodationDTO getAccommodationById(UUID uuid) {
@@ -132,7 +191,7 @@ public class AccommodationServiceImpl implements AccommodationService {
         if (entity.isPresent()) {
             businessService.updateValues(entity.get());
             AccommodationDTO dto = accommodationConverter.toDtoWithRooms(entity.get());
-                    return dto;
+            return dto;
         } else {
             throw new NotFoundException("No se ha encontrado el UUID introducido");
         }

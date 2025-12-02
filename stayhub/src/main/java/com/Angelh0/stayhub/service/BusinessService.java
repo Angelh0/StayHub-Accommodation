@@ -16,7 +16,7 @@ public interface BusinessService {
     List<RoomEntity> filterCheckAvailability(List<String> uuidList, List<RoomEntity> roomEntities, LocalDate checkIn, LocalDate checkOut);
     List<ResponseAccommodationDTO> filterAccommodation(List<RoomEntity> available);
     void validateAccommodationStatus(UUID uuidRoom);
-    void validateRoomStatus(UUID uuidRoom, LocalDate blockStartDate, LocalDate blockEndDate);
+    void validateRoomStatus(UUID uuidRoom, String blockStartDate, String blockEndDate);
     void saveSearchResult(List<RoomEntity> availableRooms);
     void updateRoomValues();
 }
