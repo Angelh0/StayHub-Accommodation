@@ -16,7 +16,8 @@ public class SearchRoomEntity {
     @Id
     private int id = 1;
 
-    private UUID uuidRoom;
+    @Column
+    private UUID uuidUser;
 
     @Column(nullable = false)
     private UUID searchUuid;
@@ -37,7 +38,4 @@ public class SearchRoomEntity {
             searchUuid = UUID.randomUUID();
         }
     }
-
 }
-
-

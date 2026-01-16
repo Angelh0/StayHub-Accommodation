@@ -52,10 +52,7 @@ public class AccommodationServiceImpl implements AccommodationService {
 
     @Autowired
     private GrpcClientValidateCountry grpcClientValidateCountry;
-    @Autowired
-    private AccommodationDraftRepository accommodationDraftRepository;
-    @Autowired
-    private AccommodationCalendarConverter accommodationCalendarConverter;
+
     @Autowired
     private AccommodationCalendarRepository accommodationCalendarRepository;
 
@@ -219,6 +216,4 @@ public class AccommodationServiceImpl implements AccommodationService {
         }
         return result;
     }
-
-
 }

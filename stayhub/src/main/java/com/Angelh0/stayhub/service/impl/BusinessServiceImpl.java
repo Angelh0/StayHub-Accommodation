@@ -1,7 +1,9 @@
 package com.Angelh0.stayhub.service.impl;
 
 import com.Angelh0.stayhub.converter.AccommodationConverter;
+import com.Angelh0.stayhub.converter.RoomConverter;
 import com.Angelh0.stayhub.dto.accommodation.ResponseAccommodationDTO;
+import com.Angelh0.stayhub.dto.room.ResponseRoomDTO;
 import com.Angelh0.stayhub.dto.room.RoomAvailabilityDTO;
 import com.Angelh0.stayhub.entity.*;
 import com.Angelh0.stayhub.enums.AccommodationEnums.AccommodationStatus;
@@ -13,7 +15,6 @@ import com.Angelh0.stayhub.grpcClient.GrpcClientGetAvailability;
 import com.Angelh0.stayhub.grpcClient.GrpcClientRoomStatusChange;
 import com.Angelh0.stayhub.repository.AccommodationRepository;
 import com.Angelh0.stayhub.repository.RoomRepository;
-import com.Angelh0.stayhub.repository.SearchResultRepository;
 import com.Angelh0.stayhub.repository.SearchRoomRepository;
 import com.Angelh0.stayhub.service.AccommodationDraftService;
 import com.Angelh0.stayhub.service.BusinessService;
@@ -31,24 +32,24 @@ public class BusinessServiceImpl implements BusinessService {
     private final GrpcClientGetAvailability availabilityGrpcClient;
 
     private final AccommodationConverter accommodationConverter;
-    private final SearchResultRepository searchResultRepository;
     private final AccommodationRepository accommodationRepository;
     private final SearchRoomRepository searchRoomRepository;
     private final RoomRepository roomRepository;
     private final AccommodationDraftService accommodationDraftService;
     private final GrpcClientRoomStatusChange grpRoomStatusChange;
+    private final RoomConverter roomConverter;
 
 
-    public BusinessServiceImpl(GrpcClientGetAvailability availabilityGrpcClient, AccommodationConverter accommodationConverter, SearchResultRepository searchResultRepository, AccommodationRepository accommodationRepository, SearchRoomRepository searchRoomRepository, RoomRepository roomRepository, AccommodationDraftService accommodationDraftService, GrpcClientRoomStatusChange roomStatusChange, GrpcClientRoomStatusChange grpRoomStatusChange) {
+    public BusinessServiceImpl(GrpcClientGetAvailability availabilityGrpcClient, AccommodationConverter accommodationConverter, AccommodationRepository accommodationRepository, SearchRoomRepository searchRoomRepository, RoomRepository roomRepository, AccommodationDraftService accommodationDraftService, GrpcClientRoomStatusChange roomStatusChange, GrpcClientRoomStatusChange grpRoomStatusChange, RoomConverter roomConverter, RoomConverter roomConverter1) {
         this.availabilityGrpcClient = availabilityGrpcClient;
         this.accommodationConverter = accommodationConverter;
-        this.searchResultRepository = searchResultRepository;
         this.accommodationRepository = accommodationRepository;
         this.searchRoomRepository = searchRoomRepository;
         this.roomRepository = roomRepository;
         this.accommodationDraftService = accommodationDraftService;
         this.grpRoomStatusChange = grpRoomStatusChange;
 
+        this.roomConverter = roomConverter1;
     }
 
     @Override
@@ -83,8 +84,7 @@ public class BusinessServiceImpl implements BusinessService {
 
     public List<ResponseAccommodationDTO> filterAccommodation(List<RoomEntity> available) {
 
-        saveSearchResult(available);
-        updateAccommodationValues();
+        updateAccommodationValues(available);
 
         List<ResponseAccommodationDTO> accommodation = new ArrayList<>();
         List<AccommodationEntity> accommodationEntities = accommodationRepository.findAll();
@@ -109,101 +109,83 @@ public class BusinessServiceImpl implements BusinessService {
         return accommodation;
     }
 
-
     @Override
-    public void saveSearchResult(List<RoomEntity> availableRooms) {
-        SearchResultEntity searchResultEntity = new SearchResultEntity();
+    public List<ResponseRoomDTO> returnRooms(List<RoomEntity> available, UUID uuidAccommodation) {
 
-        List<RoomEntity> room = new ArrayList<>();
+        Optional<AccommodationEntity> accommodation = accommodationRepository.findByUuid(uuidAccommodation);
 
-        for (RoomEntity roomEntity : availableRooms) {
-            room.add(roomEntity);
-        }
+        if (accommodation.isPresent()) {
+            AccommodationEntity accommodationEntity = accommodation.get();
 
-        List<AccommodationEntity> accommodation = new ArrayList<>();
+            List<ResponseRoomDTO> rooms = new ArrayList<>();
 
-        for (RoomEntity roomEntity : availableRooms) {
-            AccommodationEntity accommodationEntity = roomEntity.getAccommodation();
-
-            boolean exist = false;
-
-            for (AccommodationEntity accommodationEntities : accommodation) {
-                if (accommodationEntities.getUuid().equals(accommodationEntity.getUuid())) {
-                    exist = true;
-                    break;
+            for (RoomEntity room : available) {
+                if (room.getAccommodation().getUuid().equals(accommodationEntity.getUuid())) {
+                    updateRoomValues(room.getUuid());
+                    rooms.add(roomConverter.responseRoomToDTO(room));
                 }
             }
-            if (!exist) {
-                accommodation.add(accommodationEntity);
-            }
+            return rooms;
         }
-
-        searchResultRepository.deleteAll();
-
-        searchResultEntity.setRooms(room);
-        searchResultEntity.setAccommodation(accommodation);
-
-        searchResultRepository.save(searchResultEntity);
-        searchResultRepository.flush();
+        throw new NotFoundException("No se ha encontrado ningun alojamiento con el UUID introducido");
     }
 
+
     @Override
-    public void updateRoomValues() {
+    public void updateRoomValues(UUID uuidRoom) {
 
         Optional<SearchRoomEntity> searchClient = searchRoomRepository.findById(1);
+        Optional<RoomEntity> room = roomRepository.findByUuid(uuidRoom);
 
-        Optional<SearchResultEntity> search = searchResultRepository.findById(1);
-
-        if (search.isPresent() && searchClient.isPresent()) {
+        if (searchClient.isPresent() && room.isPresent()) {
+            RoomEntity roomEntity = room.get();
 
             LocalDate getCheckIn = searchClient.get().getCheckIn();
             LocalDate getCheckOut = searchClient.get().getCheckOut();
 
             long daysDiff = ChronoUnit.DAYS.between(getCheckIn, getCheckOut);
 
-            List<RoomEntity> availableRooms = search.get().getRooms();
+            double price = roomEntity.getPrice();
+            double totalPrice = daysDiff * price;
 
-            for (RoomEntity roomEntity : availableRooms) {
-                double price = roomEntity.getPrice();
-                double totalPrice = daysDiff * price;
-
-                roomEntity.setTotalPrice(totalPrice);
-                roomRepository.save(roomEntity);
-            }
+            roomEntity.setTotalPrice(totalPrice);
+            roomRepository.save(roomEntity);
         }
     }
 
+
     @Override
-    public void updateAccommodationValues() {
+    public void updateAccommodationValues(List<RoomEntity> availableRooms) {
 
-        Double priceMax = null;
-        Double priceMin = null;
+        List<UUID> listAccommodation = new ArrayList<>();
 
-        Optional<SearchResultEntity> search = searchResultRepository.findById(1);
+        for (RoomEntity room : availableRooms) {
+            AccommodationEntity accommodation = room.getAccommodation();
+            UUID accommodationUUID = accommodation.getUuid();
 
-        if (search.isPresent()) {
+            if (!listAccommodation.contains(accommodationUUID)) {
+                listAccommodation.add(accommodationUUID);
 
-            List<RoomEntity> availableRooms = search.get().getRooms();
+                int availableCount = 0;
+                Double priceMax = null;
+                Double priceMin = null;
 
-            for (AccommodationEntity accommodation : search.get().getAccommodation()) {
-                int available = 0;
+                for (RoomEntity r : availableRooms) {
+                    if (r.getAccommodation().getUuid().equals(accommodationUUID)) {
+                        availableCount++;
 
-                for (RoomEntity room : availableRooms) {
-                    if (room.getAccommodation().getUuid().equals(accommodation.getUuid())) {
-                        available++;
-
-                        if (priceMax == null || room.getPrice() > priceMax) {
-                            priceMax = room.getPrice();
+                        if (priceMax == null || r.getPrice() > priceMax) {
+                            priceMax = r.getPrice();
                         }
-                        if (priceMin == null || room.getPrice() < priceMin) {
-                            priceMin = room.getPrice();
+                        if (priceMin == null || r.getPrice() < priceMin) {
+                            priceMin = r.getPrice();
                         }
                     }
                 }
 
+                accommodation.setAvailability(availableCount);
                 accommodation.setPriceMax(priceMax);
                 accommodation.setPriceMin(priceMin);
-                accommodation.setAvailability(available);
                 accommodationRepository.saveAndFlush(accommodation);
             }
         }

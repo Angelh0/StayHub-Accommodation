@@ -20,7 +20,7 @@ public class AccommodationCalendarEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "accommodation_id")
     private AccommodationEntity accommodation;
 

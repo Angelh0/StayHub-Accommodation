@@ -7,19 +7,17 @@ import com.Angelh0.stayhub.dto.accommodation.ResponseAccommodationDTO;
 import com.Angelh0.stayhub.dto.room.ResponseRoomDTO;
 import com.Angelh0.stayhub.dto.search.SearchRoomDTO;
 import com.Angelh0.stayhub.entity.RoomEntity;
-import com.Angelh0.stayhub.entity.SearchResultEntity;
 import com.Angelh0.stayhub.entity.SearchRoomEntity;
 import com.Angelh0.stayhub.enums.RoomEnums.StatusType;
 import com.Angelh0.stayhub.exception.SearchException.DateValidate;
 import com.Angelh0.stayhub.repository.RoomRepository;
-import com.Angelh0.stayhub.repository.SearchResultRepository;
 import com.Angelh0.stayhub.repository.SearchRoomRepository;
 import com.Angelh0.stayhub.service.BusinessService;
 import com.Angelh0.stayhub.service.SearchService;
 import org.springframework.stereotype.Service;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -32,25 +30,25 @@ public class SearchServiceImpl implements SearchService {
     private final RoomRepository roomRepository;
     private final RoomConverter roomConverter;
     private final BusinessService businessService;
-    private final SearchResultRepository searchResultRepository;
 
     public SearchServiceImpl(SearchRoomRepository searchRoomRepository,
                              SearchConverter searchConverter,
                              RoomRepository roomRepository,
-                             RoomConverter roomConverter, BusinessService businessService, SearchResultRepository searchResultRepository1, AccommodationConverter accommodationConverter) {
+                             RoomConverter roomConverter, BusinessService businessService, AccommodationConverter accommodationConverter) {
         this.searchRoomRepository = searchRoomRepository;
         this.searchConverter = searchConverter;
         this.roomRepository = roomRepository;
         this.roomConverter = roomConverter;
         this.businessService = businessService;
-        this.searchResultRepository = searchResultRepository1;
     }
 
     @Override
     public List<ResponseAccommodationDTO> searchAdvanced(SearchRoomDTO searchRoomDTO, String city, int room, int capacity, LocalDate checkIn, LocalDate checkOut) {
 
+        UUID uuidUser = UUID.fromString((String) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+
         DateValidate.validateCheckIn(checkIn, checkOut); //Comprobación de fechas
-        saveSearch(searchRoomDTO, city, room, capacity, checkIn, checkOut); //Guardar última búsqueda
+        saveSearch(searchRoomDTO, uuidUser, city, room, capacity, checkIn, checkOut); //Guardar última búsqueda
 
         // Primer filtrado
         List<RoomEntity> roomEntities = roomRepository.findByAccommodation_CityAndRoomAndCapacity(city, room, capacity);
@@ -67,32 +65,29 @@ public class SearchServiceImpl implements SearchService {
     @Override
     public List<ResponseRoomDTO> searchAdvancedRoom(UUID uuid) {
 
-        businessService.updateRoomValues();
+        Optional<SearchRoomEntity> searchRoomEntity = searchRoomRepository.findById(1);
 
-        Optional<SearchResultEntity> search = searchResultRepository.findById(1);
+        if (searchRoomEntity.isPresent()) {
+            SearchRoomEntity search = searchRoomEntity.get();
 
-        List<ResponseRoomDTO> roomDTOs = new ArrayList<>();
+            List<RoomEntity> roomEntities = roomRepository.findByAccommodation_CityAndRoomAndCapacity(search.getCity(), search.getRoom(), search.getCapacity());
+            List<String> uuidList = businessService.filterRoomAvailable(roomEntities);
 
-        if (search.isPresent()) {
-            List<RoomEntity> available = search.get().getRooms();
+            List<RoomEntity> availableRooms = businessService.filterCheckAvailability(uuidList, roomEntities, search.getCheckIn(), search.getCheckOut());
 
-            for (RoomEntity roomEntity : available) {
-                if (roomEntity.getAccommodation().getUuid().equals(uuid)) {
-                    ResponseRoomDTO responseRoomDTO = roomConverter.responseRoomToDTO(roomEntity);
-                    roomDTOs.add(responseRoomDTO);
-                }
-            }
+            return businessService.returnRooms(availableRooms, uuid);
+
         }
-
-        return roomDTOs;
+        return null;
     }
 
 
-    public void saveSearch(SearchRoomDTO searchRoomDTO, String city, int room, int capacity, LocalDate checkIn, LocalDate checkOut) {
+    public void saveSearch(SearchRoomDTO searchRoomDTO, UUID uuidUser, String city, int room, int capacity, LocalDate checkIn, LocalDate checkOut) {
         SearchRoomEntity searchRoomEntity = new SearchRoomEntity();
 
         searchRoomEntity.setSearchUuid(UUID.randomUUID());
 
+        searchRoomEntity.setUuidUser(uuidUser);
         searchRoomEntity.setCity(city);
         searchRoomEntity.setRoom(room);
         searchRoomEntity.setCapacity(capacity);
