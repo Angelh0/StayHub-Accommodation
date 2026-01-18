@@ -8,6 +8,7 @@ import com.Angelh0.stayhub.service.AccommodationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -23,15 +24,17 @@ public class AccommodationController {
     }
 
     @PostMapping("/create") //Modificado y comprobado
-    public ResponseEntity<RequestAccommodationDTO> createAccommodation(@RequestBody @Valid RequestAccommodationDTO requestAccommodationDTO) {
-        requestAccommodationDTO = accommodationService.createAccommodation(requestAccommodationDTO);
+    public ResponseEntity<RequestAccommodationDTO> createAccommodation(@RequestBody @Valid RequestAccommodationDTO requestAccommodationDTO, Authentication authentication) {
+        UUID userUUID = UUID.fromString(authentication.getPrincipal().toString());
+        requestAccommodationDTO = accommodationService.createAccommodation(requestAccommodationDTO, userUUID);
         ResponseEntity<RequestAccommodationDTO> responseEntity = new ResponseEntity<>(requestAccommodationDTO, HttpStatus.CREATED);
         return responseEntity;
     }
 
     @PatchMapping("/modified/{uuid}")
-    public ResponseEntity<ResponseAccommodationDTO> modifiedAccommodation(@RequestBody @Valid UpdateAccommodationDTO updateAccommodationDTO, @PathVariable UUID uuid) {
-        ResponseAccommodationDTO responseAccommodationDTO = accommodationService.modifiedAccommodation(updateAccommodationDTO, uuid);
+    public ResponseEntity<ResponseAccommodationDTO> modifiedAccommodation(@RequestBody @Valid UpdateAccommodationDTO updateAccommodationDTO, @PathVariable UUID uuid, Authentication authentication) {
+        UUID userUUID = UUID.fromString(authentication.getPrincipal().toString());
+        ResponseAccommodationDTO responseAccommodationDTO = accommodationService.modifiedAccommodation(updateAccommodationDTO, uuid, userUUID);
         ResponseEntity<ResponseAccommodationDTO> responseEntity = new ResponseEntity<>(responseAccommodationDTO, HttpStatus.OK);
         return responseEntity;
     }

@@ -11,9 +11,9 @@ import java.util.UUID;
 
 public interface RoomService {
 
-    RoomDTO createRoom(RoomDTO roomDTO, UUID uuid);
+    RoomDTO createRoom(RoomDTO roomDTO, UUID uuid, UUID userUUID);
     List<RoomAdminDTO> getAllRooms();
-    RoomDTO modifiedRooms(UpdateRoomDTO updateRoomDTO, UUID uuid);
+    RoomDTO modifiedRooms(UpdateRoomDTO updateRoomDTO, UUID uuid, UUID userUUID);
     ResponseRoomDTO getRooms(UUID uuid);
     void deleteByUuid(UUID uuid);
 

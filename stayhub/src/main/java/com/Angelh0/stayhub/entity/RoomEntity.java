@@ -27,6 +27,9 @@ public class RoomEntity {
     private UUID uuid;
 
     @Column
+    private UUID uuidOwner;
+
+    @Column
     private int room;
 
     @Column

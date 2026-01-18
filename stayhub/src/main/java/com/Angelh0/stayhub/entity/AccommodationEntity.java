@@ -25,6 +25,8 @@ public class AccommodationEntity {
     @Column(unique = true, nullable = false)
     private UUID uuid;
 
+    private UUID uuidOwner;
+
     @Column
     private String name;
 

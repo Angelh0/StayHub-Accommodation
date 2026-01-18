@@ -14,6 +14,8 @@ public class RequestAccommodationDTO {
 
     private UUID uuid;
 
+    private UUID uuidOwner;
+
     @NotBlank(message = "El campo nombre es obligatorio")
     private String name;
 

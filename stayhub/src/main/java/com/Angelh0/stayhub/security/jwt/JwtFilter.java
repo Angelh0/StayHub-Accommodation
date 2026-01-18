@@ -29,18 +29,14 @@ public class JwtFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
 
         String authHeader = request.getHeader("Authorization");
-        System.out.println("Authorization header: " + authHeader);
-
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
 
             String jwt = authHeader.substring(7);
-            System.out.println("JWT recibido: " + jwt);
 
             if (jwtUtil.validateToken(jwt)) {
 
                 String uuidUser = jwtUtil.extractUuidUser(jwt);
-                System.out.println("UUID desde token: " + uuidUser);
                 String role = jwtUtil.extractRole(jwt);
 
                 List<GrantedAuthority> authorities =

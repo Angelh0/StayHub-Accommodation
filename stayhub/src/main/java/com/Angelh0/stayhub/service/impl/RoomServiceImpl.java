@@ -4,10 +4,8 @@ import com.Angelh0.stayhub.converter.RoomConverter;
 import com.Angelh0.stayhub.dto.room.*;
 import com.Angelh0.stayhub.entity.RoomEntity;
 import com.Angelh0.stayhub.enums.RoomEnums.RoomStatus;
-import com.Angelh0.stayhub.exception.InvalidValues;
 import com.Angelh0.stayhub.exception.NotFoundException;
 import com.Angelh0.stayhub.exception.RoomException.RoomContainsReservation;
-import com.Angelh0.stayhub.exception.SearchException.DateValid;
 import com.Angelh0.stayhub.exception.SearchException.DateValidate;
 import com.Angelh0.stayhub.grpcClient.GrpcClientFutureReservation;
 import com.Angelh0.stayhub.repository.AccommodationRepository;
@@ -49,8 +47,8 @@ public class RoomServiceImpl implements RoomService {
 
 
     @Override
-    public RoomDTO createRoom(RoomDTO roomDTO, UUID uuid) {
-        Optional<AccommodationEntity> accommodationEntity = accommodationRepository.findByUuid(uuid);
+    public RoomDTO createRoom(RoomDTO roomDTO, UUID uuid, UUID userUUID) {
+        Optional<AccommodationEntity> accommodationEntity = accommodationRepository.findByUuidAndUuidOwner(uuid, userUUID);
 
         if (accommodationEntity.isPresent()) {
             AccommodationEntity accommodation = accommodationEntity.get();
@@ -59,13 +57,15 @@ public class RoomServiceImpl implements RoomService {
             room = roomRepository.save(room);
             accommodation.getRooms().add(room);
             businessService.updateValues(accommodation);
+            room.setUuidOwner(userUUID);
             room = roomRepository.save(room);
             roomDTO = roomConverter.convertEntityToDTO(room);
             businessService.validateAccommodationStatus(roomDTO.getUuid());
             accommodationDraftService.checkAddRooms(accommodation.getUuid());
             return roomDTO;
+        } else {
+            throw new NotFoundException("El alojamiento con el que quiere relacionar está habitacion no existe");
         }
-        return null;
     }
 
 
@@ -82,9 +82,9 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public RoomDTO modifiedRooms(UpdateRoomDTO updateRoomDTO, UUID uuid) {
+    public RoomDTO modifiedRooms(UpdateRoomDTO updateRoomDTO, UUID uuid, UUID userUUID) {
 
-        Optional<RoomEntity> roomEntity = roomRepository.findByUuid(uuid);
+        Optional<RoomEntity> roomEntity = roomRepository.findByUuidAndUuidOwner(uuid, userUUID);
 
         if (roomEntity.isPresent()) {
             RoomEntity entity = roomEntity.get();

@@ -27,7 +27,7 @@ public class SecurityConfig {
 
                     .authorizeHttpRequests(auth -> auth
 
-                            .requestMatchers("/h2-console/**").permitAll()
+                            .requestMatchers("/h2-console/**", "/api/v1/admin/getAllRooms", "/api/v1/admin/getAccommodation").permitAll()
 
                             // Endpoints OWNER
                             .requestMatchers("/api/v1/create", "/api/v1/modified/**", "/api/v1/createRoom/**", "/api/v1/modifiedRoom/**").hasRole("OWNER")

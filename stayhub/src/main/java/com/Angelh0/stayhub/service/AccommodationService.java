@@ -12,9 +12,9 @@ import java.util.UUID;
 
 public interface AccommodationService {
 
-    RequestAccommodationDTO createAccommodation(RequestAccommodationDTO requestAccommodationDTO);
+    RequestAccommodationDTO createAccommodation(RequestAccommodationDTO requestAccommodationDTO, UUID userUUID);
     List<ResponseAccommodationDTO> getAllAccommodations();
-    ResponseAccommodationDTO modifiedAccommodation(UpdateAccommodationDTO updateAccommodationDTO, UUID uuid);
+    ResponseAccommodationDTO modifiedAccommodation(UpdateAccommodationDTO updateAccommodationDTO, UUID uuid, UUID uuidUser);
     AccommodationDTO getAccommodationById(UUID uuid);
     void deleteAccommodation (UUID uuid);
     List<ResponseAccommodationDTO> getAccommodationByCity(String city);

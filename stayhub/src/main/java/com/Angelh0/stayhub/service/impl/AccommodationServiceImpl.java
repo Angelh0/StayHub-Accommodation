@@ -28,6 +28,7 @@ import com.Angelh0.stayhub.service.BusinessService;
 import com.checkAvailability.grpc.RoomAvailability;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -57,13 +58,14 @@ public class AccommodationServiceImpl implements AccommodationService {
     private AccommodationCalendarRepository accommodationCalendarRepository;
 
     @Override
-    public RequestAccommodationDTO createAccommodation(RequestAccommodationDTO requestAccommodationDTO) {
+    public RequestAccommodationDTO createAccommodation(RequestAccommodationDTO requestAccommodationDTO, UUID userUUID) {
 
         AccommodationEntity accommodationEntity = accommodationConverter.toEntityRequest(requestAccommodationDTO);
         RoomAvailabilityDTO validate = grpcClientValidateCountry.validateValues(requestAccommodationDTO.getCity(), requestAccommodationDTO.getCountry());
         if (!validate.isAvailable()) {
             throw new NotFoundException(validate.getMessage());
         }
+        accommodationEntity.setUuidOwner(userUUID);
         accommodationEntity = accommodationRepository.save(accommodationEntity);
         requestAccommodationDTO = accommodationConverter.toDtoRequest(accommodationEntity);
         accommodationDraftService.checkBasicCreate(requestAccommodationDTO.getUuid());
@@ -86,9 +88,9 @@ public class AccommodationServiceImpl implements AccommodationService {
     }
 
     @Override
-    public ResponseAccommodationDTO modifiedAccommodation(UpdateAccommodationDTO updateAccommodationDTO, UUID uuid) {
+    public ResponseAccommodationDTO modifiedAccommodation(UpdateAccommodationDTO updateAccommodationDTO, UUID uuid, UUID uuidUser) {
 
-        Optional<AccommodationEntity> optionalAccommodation = accommodationRepository.findByUuid(uuid);
+        Optional<AccommodationEntity> optionalAccommodation = accommodationRepository.findByUuidAndUuidOwner(uuid, uuidUser);
 
         if (optionalAccommodation.isPresent()) {
             AccommodationEntity accommodation = optionalAccommodation.get();
@@ -107,21 +109,21 @@ public class AccommodationServiceImpl implements AccommodationService {
                 accommodation.setDescription(updateAccommodationDTO.getDescription());
             }
 
-            if (updateAccommodationDTO.getMinStay() != null) {
-                if (updateAccommodationDTO.getMinStay() != 0) {
-                    accommodation.setMinStay(updateAccommodationDTO.getMinStay());
-                }
-                if (updateAccommodationDTO.getMinStay() == 0) {
-                    throw new InvalidValues("La estancia minima no puede ser inferior a 1");
-                }
+            Integer minStay = updateAccommodationDTO.getMinStay() != null ? updateAccommodationDTO.getMinStay() : accommodation.getMinStay();
+            Integer maxStay = updateAccommodationDTO.getMaxStay() != null ? updateAccommodationDTO.getMaxStay() : accommodation.getMaxStay();
+
+            if (minStay < 1) {
+                throw new InvalidValues("La estancia minima no puede ser inferior a 1");
             }
 
-            if (updateAccommodationDTO.getMaxStay() < accommodation.getMinStay()) {
-                if (updateAccommodationDTO.getMaxStay() > accommodation.getMinStay()) {
-                    accommodation.setMaxStay(updateAccommodationDTO.getMaxStay());
-                }
-                throw new AccommodationEmptyValues("La estancia maxima no puede ser inferior a la estancia minima");
+            if (maxStay < minStay) {
+                throw new InvalidValues("La estancia no puede ser inferior a la minima");
             }
+
+            accommodation.setMinStay(minStay);
+            accommodation.setMaxStay(maxStay);
+
+            accommodationRepository.save(accommodation);
 
             if (updateAccommodationDTO.getCalendar() != null) {
                 AccommodationCalendarDTO calendarDTO = updateAccommodationDTO.getCalendar();

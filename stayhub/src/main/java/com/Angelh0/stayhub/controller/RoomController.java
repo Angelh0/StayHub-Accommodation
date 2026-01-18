@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -32,15 +33,17 @@ public class RoomController {
     }
 
     @PostMapping("/createRoom/{uuid}")
-    public ResponseEntity<RoomDTO> createRoom(@RequestBody @Valid RoomDTO roomDTO, @PathVariable UUID uuid) {
-        roomDTO = roomService.createRoom(roomDTO, uuid);
+    public ResponseEntity<RoomDTO> createRoom(@RequestBody @Valid RoomDTO roomDTO, @PathVariable UUID uuid, Authentication authentication) {
+        UUID userUUID = UUID.fromString(authentication.getPrincipal().toString());
+        roomDTO = roomService.createRoom(roomDTO, uuid, userUUID);
         ResponseEntity<RoomDTO> responseEntity = new ResponseEntity<>(roomDTO, HttpStatus.CREATED);
         return responseEntity;
     }
 
     @PutMapping("/modifiedRoom/{uuid}")
-    public ResponseEntity<RoomDTO> modifiedRoom(@RequestBody UpdateRoomDTO updateRoomDTO, @PathVariable UUID uuid) {
-        RoomDTO roomDTO = roomService.modifiedRooms(updateRoomDTO, uuid);
+    public ResponseEntity<RoomDTO> modifiedRoom(@RequestBody UpdateRoomDTO updateRoomDTO, @PathVariable UUID uuid, Authentication authentication) {
+        UUID userUUID = UUID.fromString(authentication.getPrincipal().toString());
+        RoomDTO roomDTO = roomService.modifiedRooms(updateRoomDTO, uuid, userUUID);
         ResponseEntity<RoomDTO> responseEntity = new ResponseEntity<>(roomDTO, HttpStatus.OK);
         return responseEntity;
     }

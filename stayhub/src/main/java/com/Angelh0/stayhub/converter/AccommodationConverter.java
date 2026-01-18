@@ -70,6 +70,7 @@ public class AccommodationConverter {
     public RequestAccommodationDTO toDtoRequest(AccommodationEntity accommodationEntity) {
         RequestAccommodationDTO requestAccommodationDTO = new RequestAccommodationDTO();
         requestAccommodationDTO.setUuid(accommodationEntity.getUuid());
+        requestAccommodationDTO.setUuidOwner(accommodationEntity.getUuidOwner());
         requestAccommodationDTO.setName(accommodationEntity.getName());
         requestAccommodationDTO.setType(accommodationEntity.getType());
         requestAccommodationDTO.setDescription(accommodationEntity.getDescription());

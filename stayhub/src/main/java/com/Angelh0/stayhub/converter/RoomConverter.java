@@ -3,7 +3,6 @@ package com.Angelh0.stayhub.converter;
 import com.Angelh0.stayhub.dto.room.ResponseRoomDTO;
 import com.Angelh0.stayhub.dto.room.RoomAdminDTO;
 import com.Angelh0.stayhub.dto.room.RoomDTO;
-import com.Angelh0.stayhub.dto.search.SearchRoomDTO;
 import com.Angelh0.stayhub.entity.RoomEntity;
 import org.springframework.stereotype.Component;
 
@@ -27,6 +26,7 @@ public class RoomConverter {
     public RoomDTO convertEntityToDTO(RoomEntity roomEntity) {
         RoomDTO roomDTO = new RoomDTO();
         roomDTO.setUuid(roomEntity.getUuid());
+        roomDTO.setUuidOwner(roomEntity.getUuidOwner());
         roomDTO.setCity(roomEntity.getAccommodation().getCity());
         roomDTO.setRoom(roomEntity.getRoom());
         roomDTO.setCapacity(roomEntity.getCapacity());

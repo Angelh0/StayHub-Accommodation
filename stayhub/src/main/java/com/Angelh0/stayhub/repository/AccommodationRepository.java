@@ -15,4 +15,6 @@ public interface AccommodationRepository extends JpaRepository<AccommodationEnti
     Optional<AccommodationEntity> findByUuid(UUID uuid);
     void deleteByUuid(UUID uuid);
 
+    Optional<AccommodationEntity> findByUuidAndUuidOwner(UUID uuid, UUID uuidOwner);
+
 }

@@ -17,6 +17,8 @@ public class RoomDTO {
     private UUID uuid;
     private String city;
 
+    private UUID uuidOwner;
+
     @NotNull(message = "El numero de habitaciones no puede estar vacio")
     @Min(value = 1, message = "Debe contener al menos 1 habitacion")
     private Integer room;
