@@ -19,6 +19,7 @@ import com.Angelh0.stayhub.repository.SearchRoomRepository;
 import com.Angelh0.stayhub.service.AccommodationDraftService;
 import com.Angelh0.stayhub.service.BusinessService;
 import jakarta.transaction.Transactional;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -83,6 +84,7 @@ public class BusinessServiceImpl implements BusinessService {
     }
 
     public List<ResponseAccommodationDTO> filterAccommodation(List<RoomEntity> available) {
+        UUID uuidUser = UUID.fromString((String) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
 
         updateAccommodationValues(available);
 
@@ -94,8 +96,8 @@ public class BusinessServiceImpl implements BusinessService {
 
             for (RoomEntity room : available) {
                 accommodationDraftService.checkPublishAccommodation(room.getAccommodation().getUuid());
-                boolean checkStay = accommodationDraftService.checkStayAccommodation(room.getAccommodation().getUuid());
-                boolean checkMonthAvailable = accommodationDraftService.checkMonthAvailability(room.getAccommodation().getUuid());
+                boolean checkStay = accommodationDraftService.checkStayAccommodation(room.getAccommodation().getUuid(), uuidUser);
+                boolean checkMonthAvailable = accommodationDraftService.checkMonthAvailability(room.getAccommodation().getUuid(), uuidUser);
                 if (room.getAccommodation().getUuid().equals(accommodationEntity.getUuid()) && accommodationEntity.getStatus() == AccommodationStatus.Active && checkStay && checkMonthAvailable) {
                     find = true;
                     break;
@@ -134,7 +136,9 @@ public class BusinessServiceImpl implements BusinessService {
     @Override
     public void updateRoomValues(UUID uuidRoom) {
 
-        Optional<SearchRoomEntity> searchClient = searchRoomRepository.findById(1);
+        UUID uuidUser = UUID.fromString((String) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+
+        Optional<LastSearchEntity> searchClient = searchRoomRepository.findByUuidUser(uuidUser);
         Optional<RoomEntity> room = roomRepository.findByUuid(uuidRoom);
 
         if (searchClient.isPresent() && room.isPresent()) {

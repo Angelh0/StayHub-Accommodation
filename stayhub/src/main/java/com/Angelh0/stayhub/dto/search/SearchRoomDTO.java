@@ -13,6 +13,8 @@ public class SearchRoomDTO {
 
     private UUID searchUuid;
 
+    private UUID uuidUser;
+
     private String city;
 
     @JsonFormat(pattern="d/M/yyyy")

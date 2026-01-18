@@ -5,7 +5,7 @@ import com.Angelh0.stayhub.dto.accommodation.AccommodationDTO;
 import com.Angelh0.stayhub.entity.AccommodationCalendarEntity;
 import com.Angelh0.stayhub.entity.AccommodationDraftEntity;
 import com.Angelh0.stayhub.entity.AccommodationEntity;
-import com.Angelh0.stayhub.entity.SearchRoomEntity;
+import com.Angelh0.stayhub.entity.LastSearchEntity;
 import com.Angelh0.stayhub.enums.AccommodationEnums.AccommodationStatus;
 import com.Angelh0.stayhub.exception.InvalidValues;
 import com.Angelh0.stayhub.exception.NotFoundException;
@@ -263,18 +263,18 @@ public class AccommodationDraftServiceImpl implements AccommodationDraftService 
     }
 
     @Override
-    public boolean checkStayAccommodation(UUID uuidAccommodation) {
+    public boolean checkStayAccommodation(UUID uuidAccommodation, UUID uuidUser) {
 
         Optional<AccommodationEntity> accommodation = accommodationRepository.findByUuid(uuidAccommodation);
 
-        Optional<SearchRoomEntity> search = searchRoomRepository.findById(1);
+        Optional<LastSearchEntity> search = searchRoomRepository.findByUuidUser(uuidUser);
 
         if (accommodation.isPresent() && search.isPresent()) {
             AccommodationEntity accommodationEntity = accommodation.get();
-            SearchRoomEntity searchRoomEntity = search.get();
+            LastSearchEntity lastSearchEntity = search.get();
 
-            LocalDate getCheckIn = searchRoomEntity.getCheckIn();
-            LocalDate getCheckOut = searchRoomEntity.getCheckOut();
+            LocalDate getCheckIn = lastSearchEntity.getCheckIn();
+            LocalDate getCheckOut = lastSearchEntity.getCheckOut();
 
             long daysDiff = ChronoUnit.DAYS.between(getCheckIn, getCheckOut);
 
@@ -286,18 +286,18 @@ public class AccommodationDraftServiceImpl implements AccommodationDraftService 
     }
 
     @Override
-    public boolean checkMonthAvailability(UUID uuidAccommodation) {
+    public boolean checkMonthAvailability(UUID uuidAccommodation, UUID uuidUser) {
 
         Optional<AccommodationEntity> accommodation = accommodationRepository.findByUuid(uuidAccommodation);
 
-        Optional<SearchRoomEntity> search = searchRoomRepository.findById(1);
+        Optional<LastSearchEntity> search = searchRoomRepository.findByUuidUser(uuidUser);
 
         if (accommodation.isPresent() && search.isPresent()) {
             AccommodationEntity accommodationEntity = accommodation.get();
-            SearchRoomEntity searchRoomEntity = search.get();
+            LastSearchEntity lastSearchEntity = search.get();
 
-            int getMonthCheckIn = searchRoomEntity.getCheckIn().getMonthValue();
-            int getMonthCheckOut = searchRoomEntity.getCheckOut().getMonthValue();
+            int getMonthCheckIn = lastSearchEntity.getCheckIn().getMonthValue();
+            int getMonthCheckOut = lastSearchEntity.getCheckOut().getMonthValue();
 
             List<Integer> availableMonths = accommodationEntity.getCalendar().getCalendarMonth();
 

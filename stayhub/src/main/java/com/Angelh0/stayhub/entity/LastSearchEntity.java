@@ -8,13 +8,14 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
-@Table(name = "ROOM_SEARCH")
+@Table(name = "LAST_SEARCH")
 @Getter
 @Setter
-public class SearchRoomEntity {
+public class LastSearchEntity {
 
     @Id
-    private int id = 1;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
 
     @Column
     private UUID uuidUser;

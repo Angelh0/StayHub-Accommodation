@@ -15,6 +15,6 @@ public interface AccommodationDraftService {
     AccommodationDTO publishAccommodation(UUID uuid);
     boolean checkPublishAccommodation (UUID uuid);
 
-    boolean checkStayAccommodation(UUID uuidAccommodation);
-    boolean checkMonthAvailability(UUID uuidAccommodation);
+    boolean checkStayAccommodation(UUID uuidAccommodation, UUID uuidUser);
+    boolean checkMonthAvailability(UUID uuidAccommodation, UUID uuidUser);
 }

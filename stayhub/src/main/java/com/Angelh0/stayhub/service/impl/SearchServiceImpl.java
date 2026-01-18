@@ -7,7 +7,7 @@ import com.Angelh0.stayhub.dto.accommodation.ResponseAccommodationDTO;
 import com.Angelh0.stayhub.dto.room.ResponseRoomDTO;
 import com.Angelh0.stayhub.dto.search.SearchRoomDTO;
 import com.Angelh0.stayhub.entity.RoomEntity;
-import com.Angelh0.stayhub.entity.SearchRoomEntity;
+import com.Angelh0.stayhub.entity.LastSearchEntity;
 import com.Angelh0.stayhub.enums.RoomEnums.StatusType;
 import com.Angelh0.stayhub.exception.SearchException.DateValidate;
 import com.Angelh0.stayhub.repository.RoomRepository;
@@ -65,10 +65,12 @@ public class SearchServiceImpl implements SearchService {
     @Override
     public List<ResponseRoomDTO> searchAdvancedRoom(UUID uuid) {
 
-        Optional<SearchRoomEntity> searchRoomEntity = searchRoomRepository.findById(1);
+        UUID uuidUser = UUID.fromString((String) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+
+        Optional<LastSearchEntity> searchRoomEntity = searchRoomRepository.findByUuidUser(uuidUser);
 
         if (searchRoomEntity.isPresent()) {
-            SearchRoomEntity search = searchRoomEntity.get();
+            LastSearchEntity search = searchRoomEntity.get();
 
             List<RoomEntity> roomEntities = roomRepository.findByAccommodation_CityAndRoomAndCapacity(search.getCity(), search.getRoom(), search.getCapacity());
             List<String> uuidList = businessService.filterRoomAvailable(roomEntities);
@@ -81,21 +83,21 @@ public class SearchServiceImpl implements SearchService {
         return null;
     }
 
-
     public void saveSearch(SearchRoomDTO searchRoomDTO, UUID uuidUser, String city, int room, int capacity, LocalDate checkIn, LocalDate checkOut) {
-        SearchRoomEntity searchRoomEntity = new SearchRoomEntity();
 
-        searchRoomEntity.setSearchUuid(UUID.randomUUID());
+        LastSearchEntity lastSearch = searchRoomRepository
+                .findByUuidUser(uuidUser)
+                .orElse(new LastSearchEntity());
 
-        searchRoomEntity.setUuidUser(uuidUser);
-        searchRoomEntity.setCity(city);
-        searchRoomEntity.setRoom(room);
-        searchRoomEntity.setCapacity(capacity);
-        searchRoomEntity.setCheckIn(checkIn);
-        searchRoomEntity.setCheckOut(checkOut);
+        lastSearch.setSearchUuid(UUID.randomUUID());
+        lastSearch.setUuidUser(uuidUser);
+        lastSearch.setCity(city);
+        lastSearch.setRoom(room);
+        lastSearch.setCapacity(capacity);
+        lastSearch.setCheckIn(checkIn);
+        lastSearch.setCheckOut(checkOut);
 
-        searchRoomRepository.deleteAll();
-        searchRoomRepository.save(searchRoomEntity);
+        searchRoomRepository.save(lastSearch);
     }
 
     @Override
@@ -114,7 +116,7 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public SearchRoomDTO getChecks() {
-        Optional<SearchRoomEntity> search = searchRoomRepository.findById(1);
+        Optional<LastSearchEntity> search = searchRoomRepository.findById(1);
 
         if (search.isPresent()) {
             return searchConverter.convertToDTO(search.get());
