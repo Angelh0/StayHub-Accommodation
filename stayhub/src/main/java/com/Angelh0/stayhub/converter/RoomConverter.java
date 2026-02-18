@@ -58,6 +58,7 @@ public class RoomConverter {
 
     public ResponseRoomDTO responseRoomToDTO(RoomEntity roomEntity) {
         ResponseRoomDTO responseRoomDTO = new ResponseRoomDTO();
+        responseRoomDTO.setUuidOwner(roomEntity.getUuidOwner());
         responseRoomDTO.setUuid(roomEntity.getUuid());
         responseRoomDTO.setCity(roomEntity.getAccommodation().getCity());
         responseRoomDTO.setRoom(roomEntity.getRoom());
@@ -66,7 +67,6 @@ public class RoomConverter {
         responseRoomDTO.setType(roomEntity.getType());
         responseRoomDTO.setTotalPrice(roomEntity.getTotalPrice());
         responseRoomDTO.setAreaInSquareMeters(roomEntity.getAreaInSquareMeters());
-
         return responseRoomDTO;
     }
 }

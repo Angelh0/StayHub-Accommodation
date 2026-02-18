@@ -4,6 +4,7 @@ import com.Angelh0.stayhub.dto.accommodation.AccommodationDTO;
 import com.Angelh0.stayhub.service.AccommodationDraftService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,8 +27,9 @@ public class AccommodationDraftController {
     }
 
     @PatchMapping("/stayConfiguration/{uuid}")
-    public ResponseEntity<AccommodationDTO> stayConfiguration(@RequestBody AccommodationDTO accommodationDTO, @PathVariable UUID uuid) {
-        AccommodationDTO accommodation = accommodationDraftService.stayConfiguration(uuid, accommodationDTO);
+    public ResponseEntity<AccommodationDTO> stayConfiguration(@RequestBody AccommodationDTO accommodationDTO, @PathVariable UUID uuid, Authentication authentication) {
+        UUID uuidOwner = UUID.fromString(authentication.getPrincipal().toString());
+        AccommodationDTO accommodation = accommodationDraftService.stayConfiguration(uuid, accommodationDTO, uuidOwner);
         ResponseEntity<AccommodationDTO> responseEntity = new ResponseEntity<>(accommodation, HttpStatus.OK);
         return responseEntity;
     }
@@ -39,8 +41,9 @@ public class AccommodationDraftController {
     }
 
     @PatchMapping("/availabilityCalendar/{uuid}")
-    public ResponseEntity<AccommodationDTO> availabilityCalendar(@RequestBody AccommodationDTO accommodationDTO, @PathVariable UUID uuid) {
-        AccommodationDTO accommodation = accommodationDraftService.availabilityCalendar(uuid, accommodationDTO);
+    public ResponseEntity<AccommodationDTO> availabilityCalendar(@RequestBody AccommodationDTO accommodationDTO, @PathVariable UUID uuid, Authentication authentication) {
+        UUID uuidOwner = UUID.fromString(authentication.getPrincipal().toString());
+        AccommodationDTO accommodation = accommodationDraftService.availabilityCalendar(uuid, accommodationDTO, uuidOwner);
         ResponseEntity<AccommodationDTO> responseEntity = new ResponseEntity<>(accommodation, HttpStatus.OK);
         return responseEntity;
     }
@@ -52,8 +55,9 @@ public class AccommodationDraftController {
     }
 
     @PatchMapping("/addPhotos/{uuid}")
-    public ResponseEntity<AccommodationDTO> addPhotos(@PathVariable UUID uuid, @RequestBody AccommodationDTO accommodationDTO)  {
-        AccommodationDTO accommodation = accommodationDraftService.addPhotos(uuid, accommodationDTO);
+    public ResponseEntity<AccommodationDTO> addPhotos(@PathVariable UUID uuid, @RequestBody AccommodationDTO accommodationDTO, Authentication authentication)  {
+        UUID uuidOwner = UUID.fromString(authentication.getPrincipal().toString());
+        AccommodationDTO accommodation = accommodationDraftService.addPhotos(uuid, accommodationDTO, uuidOwner);
         ResponseEntity<AccommodationDTO> responseEntity = new ResponseEntity<>(accommodation, HttpStatus.OK);
         return responseEntity;
     }

@@ -5,9 +5,6 @@ import com.Angelh0.stayhub.enums.AccommodationEnums.AccommodationType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.checkerframework.checker.units.qual.C;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 

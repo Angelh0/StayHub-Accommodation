@@ -24,12 +24,13 @@ public class GrpcClientRoomStatusChange {
     private final ReservationAvailabilityServiceGrpc.ReservationAvailabilityServiceBlockingStub stub =
             ReservationAvailabilityServiceGrpc.newBlockingStub(channel);
 
-    public RoomAvailabilityDTO checkStatusRoom(UUID uuid, String startDate, String endDate) {
+    public RoomAvailabilityDTO checkStatusRoom(UUID uuid, UUID uuidOwner, String startDate, String endDate) {
 
         ReservationStatusChangeRequest request = ReservationStatusChangeRequest.newBuilder()
                 .setRoomUuid(String.valueOf(uuid))
                 .setStartDate(startDate)
                 .setEndDate(endDate)
+                .setUuidOwner(String.valueOf(uuidOwner))
                 .build();
 
         ReservationStatusChangeResponse response = stub.checkRoomStatusChange(request);

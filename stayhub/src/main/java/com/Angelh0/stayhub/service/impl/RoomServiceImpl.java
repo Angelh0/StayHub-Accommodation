@@ -101,12 +101,12 @@ public class RoomServiceImpl implements RoomService {
                 entity.setPrice(updateRoomDTO.getPrice());
             }
 
-            if (updateRoomDTO.getRoomStatus() != RoomStatus.Active) {
+            if (updateRoomDTO.getRoomStatus() == RoomStatus.Closed) {
                 if (updateRoomDTO.getBlockStartDate() == null || updateRoomDTO.getBlockEndDate() == null) {
                     throw new NotFoundException("Los bloqueos deben contener una fecha de inicio y de fin");
                 }
                 DateValidate.validateBlockDate(updateRoomDTO.getBlockStartDate(), updateRoomDTO.getBlockEndDate());
-                businessService.validateRoomStatus(uuid, String.valueOf(updateRoomDTO.getBlockStartDate()), String.valueOf(updateRoomDTO.getBlockEndDate()));
+                businessService.validateRoomStatus(uuid, userUUID, String.valueOf(updateRoomDTO.getBlockStartDate()), String.valueOf(updateRoomDTO.getBlockEndDate()));
                 businessService.validateAccommodationStatus(uuid);
             }
 

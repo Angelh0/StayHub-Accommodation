@@ -11,6 +11,7 @@ import java.util.UUID;
 public class ResponseRoomDTO {
 
     private UUID uuid;
+    private UUID uuidOwner;
     private String city;
     private int room;
     private int capacity;

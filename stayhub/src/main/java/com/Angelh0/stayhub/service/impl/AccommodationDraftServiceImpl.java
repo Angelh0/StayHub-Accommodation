@@ -64,9 +64,9 @@ public class AccommodationDraftServiceImpl implements AccommodationDraftService 
     }
 
     @Override
-    public AccommodationDTO stayConfiguration(UUID uuidAccommodation, AccommodationDTO accommodationDTO) {
+    public AccommodationDTO stayConfiguration(UUID uuidAccommodation, AccommodationDTO accommodationDTO, UUID uuidOwner) {
 
-        Optional<AccommodationEntity> accommodation = accommodationRepository.findByUuid(uuidAccommodation);
+        Optional<AccommodationEntity> accommodation = accommodationRepository.findByUuidAndUuidOwner(uuidAccommodation, uuidOwner);
 
         if (accommodation.isPresent()) {
             AccommodationEntity accommodationEntity = accommodation.get();
@@ -115,9 +115,9 @@ public class AccommodationDraftServiceImpl implements AccommodationDraftService 
     }
 
     @Override
-    public AccommodationDTO availabilityCalendar(UUID uuidAccommodation, AccommodationDTO accommodationDTO) {
+    public AccommodationDTO availabilityCalendar(UUID uuidAccommodation, AccommodationDTO accommodationDTO, UUID uuidOwner) {
 
-        Optional<AccommodationEntity> accommodation = accommodationRepository.findByUuid(uuidAccommodation);
+        Optional<AccommodationEntity> accommodation = accommodationRepository.findByUuidAndUuidOwner(uuidAccommodation, uuidOwner);
 
         if (accommodation.isPresent()) {
             AccommodationEntity accommodationEntity = accommodation.get();
@@ -166,9 +166,9 @@ public class AccommodationDraftServiceImpl implements AccommodationDraftService 
     }
 
     @Override
-    public AccommodationDTO addPhotos(UUID uuidAccommodation, AccommodationDTO accommodationDTO) {
+    public AccommodationDTO addPhotos(UUID uuidAccommodation, AccommodationDTO accommodationDTO, UUID uuidOwner) {
 
-        Optional<AccommodationEntity> accommodation = accommodationRepository.findByUuid(uuidAccommodation);
+        Optional<AccommodationEntity> accommodation = accommodationRepository.findByUuidAndUuidOwner(uuidAccommodation, uuidOwner);
 
         if (accommodation.isPresent()) {
             AccommodationEntity accommodationEntity = accommodation.get();

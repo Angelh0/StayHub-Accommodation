@@ -18,6 +18,6 @@ public interface BusinessService {
     List<ResponseAccommodationDTO> filterAccommodation(List<RoomEntity> available);
     List<ResponseRoomDTO> returnRooms(List<RoomEntity> available, UUID uuidAccommodation);
     void validateAccommodationStatus(UUID uuidRoom);
-    void validateRoomStatus(UUID uuidRoom, String blockStartDate, String blockEndDate);
+    void validateRoomStatus(UUID uuidRoom, UUID uuidOwner, String blockStartDate, String blockEndDate);
     void updateRoomValues(UUID uuidRoom);
 }

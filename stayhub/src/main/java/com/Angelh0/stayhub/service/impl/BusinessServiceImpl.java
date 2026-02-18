@@ -260,12 +260,12 @@ public class BusinessServiceImpl implements BusinessService {
     }
 
     @Override
-    public void validateRoomStatus(UUID uuidRoom, String blockStartDate, String blockEndDate) {
+    public void validateRoomStatus(UUID uuidRoom, UUID uuidOwner, String blockStartDate, String blockEndDate) {
 
         Optional<RoomEntity> room = roomRepository.findByUuid(uuidRoom);
 
         if (room.isPresent()) {
-            RoomAvailabilityDTO availabilityDTO = grpRoomStatusChange.checkStatusRoom(uuidRoom, blockStartDate, blockEndDate);
+            RoomAvailabilityDTO availabilityDTO = grpRoomStatusChange.checkStatusRoom(uuidRoom, uuidOwner, blockStartDate, blockEndDate);
             if (!availabilityDTO.isAvailable()) {
                 throw new RoomContainsReservation(availabilityDTO.getMessage());
             }

@@ -2,6 +2,7 @@ package com.Angelh0.stayhub.grpcServiceImpl;
 
 import com.Angelh0.stayhub.dto.room.ResponseRoomDTO;
 import com.Angelh0.stayhub.service.RoomService;
+import com.roomServiceGrpc.grpc.ReservationType;
 import com.roomServiceGrpc.grpc.RoomRequest;
 import com.roomServiceGrpc.grpc.RoomResponse;
 import com.roomServiceGrpc.grpc.RoomServiceGrpc;
@@ -24,6 +25,8 @@ public class GrpcRoomServiceImpl extends RoomServiceGrpc.RoomServiceImplBase {
         RoomResponse objectRoom = RoomResponse.newBuilder()
                 .setUuidRoom(room.getUuid().toString())
                 .setPrice(room.getTotalPrice())
+                .setUuidOwner(room.getUuidOwner().toString())
+                .setType(ReservationType.valueOf(room.getType().toString()))
                 .build();
 
         responseObserver.onNext(objectRoom);
