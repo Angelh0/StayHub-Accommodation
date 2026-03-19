@@ -14,7 +14,7 @@ import java.util.UUID;
 public class GrpcClientFutureReservation {
 
     private final ManagedChannel channel = NettyChannelBuilder
-            .forTarget("localhost:9091")
+            .forTarget("stayhub-reservation:9091")
             .usePlaintext()
             .build();
 

@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 public class GrpcClientValidateCountry {
 
     private final ManagedChannel channel = NettyChannelBuilder
-            .forTarget("localhost:9092")
+            .forTarget("stayhub-country:9092")
             .usePlaintext()
             .build();
 

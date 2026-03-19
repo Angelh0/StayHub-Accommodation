@@ -31,25 +31,28 @@ public class JwtFilter extends OncePerRequestFilter {
         String authHeader = request.getHeader("Authorization");
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-
             String jwt = authHeader.substring(7);
 
-            if (jwtUtil.validateToken(jwt)) {
+            try {
+                if (jwtUtil.validateToken(jwt)) {
+                    String uuidUser = jwtUtil.extractUuidUser(jwt);
+                    String role = jwtUtil.extractRole(jwt);
 
-                String uuidUser = jwtUtil.extractUuidUser(jwt);
-                String role = jwtUtil.extractRole(jwt);
+                    String authorityName = role.startsWith("ROLE_") ? role : "ROLE_" + role;
 
-                List<GrantedAuthority> authorities =
-                        List.of(new SimpleGrantedAuthority("ROLE_" + role));
+                    List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(authorityName));
 
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(
-                                uuidUser,
-                                null,
-                                authorities
-                        );
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(
+                                    uuidUser,
+                                    null,
+                                    authorities
+                            );
 
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
+            } catch (Exception e) {
+                SecurityContextHolder.clearContext();
             }
         }
 
