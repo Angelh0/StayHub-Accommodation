@@ -32,6 +32,8 @@ public class AccommodationConverter {
         responseAccommodationDTO.setAvailability(accommodationEntity.getAvailability());
         responseAccommodationDTO.setPriceMax(accommodationEntity.getPriceMax());
         responseAccommodationDTO.setPriceMin(accommodationEntity.getPriceMin());
+        responseAccommodationDTO.setCreatedAt(accommodationEntity.getCreatedAt());
+        responseAccommodationDTO.setUpdatedAt(accommodationEntity.getUpdatedAt());
 
         return responseAccommodationDTO;
     }
@@ -54,6 +56,8 @@ public class AccommodationConverter {
         accommodationDTO.setMaxStay(accommodationEntity.getMaxStay());
         accommodationDTO.setAvailabilityCalendar(calendarConverter.entityToDTO(accommodationEntity.getCalendar()));
         accommodationDTO.setPhotos(accommodationEntity.getPhotos());
+        accommodationDTO.setCreatedAt(accommodationEntity.getCreatedAt());
+        accommodationDTO.setUpdatedAt(accommodationEntity.getUpdatedAt());
 
         accommodationDTO.setRooms(
                 accommodationEntity.getRooms()

@@ -51,7 +51,7 @@ public class SearchServiceImpl implements SearchService {
         saveSearch(searchRoomDTO, uuidUser, city, room, capacity, checkIn, checkOut); //Guardar última búsqueda
 
         // Primer filtrado
-        List<RoomEntity> roomEntities = roomRepository.findByAccommodation_CityAndRoomAndCapacity(city, room, capacity);
+        List<RoomEntity> roomEntities = roomRepository.findByAccommodation_CityAndRoomGreaterThanEqualAndCapacityGreaterThanEqual(city, room, capacity);
         List<String> uuidList = businessService.filterRoomAvailable(roomEntities);
 
         // Segundo filtrado (disponibilidad)
@@ -72,7 +72,7 @@ public class SearchServiceImpl implements SearchService {
         if (searchRoomEntity.isPresent()) {
             LastSearchEntity search = searchRoomEntity.get();
 
-            List<RoomEntity> roomEntities = roomRepository.findByAccommodation_CityAndRoomAndCapacity(search.getCity(), search.getRoom(), search.getCapacity());
+            List<RoomEntity> roomEntities = roomRepository.findByAccommodation_CityAndRoomGreaterThanEqualAndCapacityGreaterThanEqual(search.getCity(), search.getRoom(), search.getCapacity());
             List<String> uuidList = businessService.filterRoomAvailable(roomEntities);
 
             List<RoomEntity> availableRooms = businessService.filterCheckAvailability(uuidList, roomEntities, search.getCheckIn(), search.getCheckOut());

@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 import com.Angelh0.stayhub.entity.AccommodationEntity;
 
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -58,6 +59,7 @@ public class RoomServiceImpl implements RoomService {
             accommodation.getRooms().add(room);
             businessService.updateValues(accommodation);
             room.setUuidOwner(userUUID);
+            room.setCreatedAt(LocalDateTime.now());
             room = roomRepository.save(room);
             roomDTO = roomConverter.convertEntityToDTO(room);
             businessService.validateAccommodationStatus(roomDTO.getUuid());
@@ -115,6 +117,7 @@ public class RoomServiceImpl implements RoomService {
                 updateRoomDTO.setPhotos(updateRoomDTO.getPhotos());
             }
 
+            entity.setUpdatedAt(LocalDateTime.now());
             roomRepository.save(entity);
 
             return roomConverter.convertEntityToDTO(entity);
@@ -149,5 +152,26 @@ public class RoomServiceImpl implements RoomService {
         } else {
             throw new NotFoundException("No se ha encontrado ninguna habitacion con el UUID introducido");
         }
+    }
+
+    @Override
+    public List<RoomDTO> getMyRooms(UUID uuid) {
+
+        List<RoomEntity> roomEntities = roomRepository.findByUuidOwner(uuid);
+
+        if (roomEntities.isEmpty()) {
+            throw new NotFoundException("El usuario no tiene habitaciones creadas");
+        }
+
+        List<RoomDTO> roomDTOS = new ArrayList<>();
+
+        for (RoomEntity room : roomEntities) {
+
+            if (room.getUuidOwner().equals(uuid)) {
+                roomDTOS.add(roomConverter.convertEntityToDTO(room));
+            }
+        }
+
+        return roomDTOS;
     }
 }

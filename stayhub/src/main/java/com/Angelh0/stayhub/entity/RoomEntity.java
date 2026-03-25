@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -57,6 +58,10 @@ public class RoomEntity {
     private StatusType status;
 
     private double totalPrice;
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
 
     @ElementCollection
     @Column(name = "RoomPhotos")

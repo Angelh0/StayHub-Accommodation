@@ -17,4 +17,5 @@ public interface AccommodationRepository extends JpaRepository<AccommodationEnti
 
     Optional<AccommodationEntity> findByUuidAndUuidOwner(UUID uuid, UUID uuidOwner);
 
+    List<AccommodationEntity> findByUuidOwner(UUID uuidOwner);
 }

@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -44,5 +45,12 @@ public class AccommodationController {
         AccommodationDTO accommodationDTO = accommodationService.getAccommodationById(uuid);
         ResponseEntity<AccommodationDTO> responseEntity = new ResponseEntity<>(accommodationDTO, HttpStatus.OK);
         return responseEntity;
+    }
+
+    @GetMapping("/getMyAccommodation")
+    public ResponseEntity<List<AccommodationDTO>> getMyAccommodations(Authentication authentication) {
+        UUID userUUID = UUID.fromString(authentication.getPrincipal().toString());
+        List<AccommodationDTO> accommodationDTO = accommodationService.getMyAccommodations(userUUID);
+        return new ResponseEntity<>(accommodationDTO, HttpStatus.OK);
     }
 }

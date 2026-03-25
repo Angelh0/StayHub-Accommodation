@@ -35,6 +35,8 @@ public class RoomConverter {
         roomDTO.setPrice(roomEntity.getPrice());
         roomDTO.setAreaInSquareMeters(roomEntity.getAreaInSquareMeters());
         roomDTO.setStatus(roomEntity.getStatus());
+        roomDTO.setCreatedAt(roomEntity.getCreatedAt());
+        roomDTO.setUpdatedAt(roomEntity.getUpdatedAt());
 
         return roomDTO;
     }

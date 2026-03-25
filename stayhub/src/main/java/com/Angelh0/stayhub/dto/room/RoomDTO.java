@@ -2,11 +2,13 @@ package com.Angelh0.stayhub.dto.room;
 
 import com.Angelh0.stayhub.enums.RoomEnums.RoomType;
 import com.Angelh0.stayhub.enums.RoomEnums.StatusType;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -41,6 +43,12 @@ public class RoomDTO {
     @NotNull(message = "Los metros cuadrados de la habitacion no puede estar vacio")
     @Min(value = 10, message = "El valor no puede ser inferior a 10")
     private Double areaInSquareMeters;
+
+    @JsonFormat(pattern = "dd-MM-yy HH:mm:ss")
+    private LocalDateTime createdAt;
+
+    @JsonFormat(pattern = "dd-MM-yy HH:mm:ss")
+    private LocalDateTime updatedAt;
 
     @NotNull
     private StatusType status;

@@ -33,7 +33,7 @@ public class SecurityConfig {
                             .requestMatchers("/api/v1/create", "/api/v1/modified/**", "/api/v1/createRoom/**", "/api/v1/modifiedRoom/**").hasRole("OWNER")
 
                             // Endpoints USER
-                            .requestMatchers("/api/v1/searchAdvanced/**", "/api/v1/searchAdvancedRoom/**").hasAnyRole("USER", "OWNER")
+                            .requestMatchers("/api/v1/searchAdvanced/**", "/api/v1/searchAdvancedRoom/**").permitAll()
 
                             .anyRequest().authenticated()
                     )

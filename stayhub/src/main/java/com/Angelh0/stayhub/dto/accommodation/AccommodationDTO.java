@@ -5,12 +5,14 @@ import com.Angelh0.stayhub.dto.room.RoomDTO;
 import com.Angelh0.stayhub.entity.AccommodationCalendarEntity;
 import com.Angelh0.stayhub.enums.AccommodationEnums.AccommodationStatus;
 import com.Angelh0.stayhub.enums.AccommodationEnums.AccommodationType;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,6 +31,11 @@ public class AccommodationDTO {
     private int availability;
     private Double priceMax;
     private Double priceMin;
+    @JsonFormat(pattern = "dd-MM-yy HH:mm:ss")
+    private LocalDateTime createdAt;
+
+    @JsonFormat(pattern = "dd-MM-yy HH:mm:ss")
+    private LocalDateTime updatedAt;
 
     @Min(value = 1, message = "La estancia minima no puede ser inferior a 1")
     private Integer minStay;
@@ -37,4 +44,6 @@ public class AccommodationDTO {
     private AccommodationCalendarDTO availabilityCalendar;
     private List<String> photos;
     private List<RoomDTO> rooms;
+
+
 }

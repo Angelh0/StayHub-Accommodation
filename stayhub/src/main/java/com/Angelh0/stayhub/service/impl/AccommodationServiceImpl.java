@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -66,6 +67,7 @@ public class AccommodationServiceImpl implements AccommodationService {
             throw new NotFoundException(validate.getMessage());
         }
         accommodationEntity.setUuidOwner(userUUID);
+        accommodationEntity.setCreatedAt(LocalDateTime.now());
         accommodationEntity = accommodationRepository.save(accommodationEntity);
         requestAccommodationDTO = accommodationConverter.toDtoRequest(accommodationEntity);
         accommodationDraftService.checkBasicCreate(requestAccommodationDTO.getUuid());
@@ -155,6 +157,7 @@ public class AccommodationServiceImpl implements AccommodationService {
                 accommodation.setPhotos(updateAccommodationDTO.getPhotos());
             }
 
+            accommodation.setUpdatedAt(LocalDateTime.now());
             accommodation = accommodationRepository.save(accommodation);
 
             return accommodationConverter.responseToDTO(accommodation);
@@ -217,5 +220,26 @@ public class AccommodationServiceImpl implements AccommodationService {
             result.add(roomConverter.convertEntityToDTO(room));
         }
         return result;
+    }
+
+    @Override
+    public List<AccommodationDTO> getMyAccommodations(UUID uuid) {
+
+
+        List<AccommodationEntity> accommodationEntities = accommodationRepository.findByUuidOwner(uuid);
+
+        if (accommodationEntities.isEmpty()) {
+            throw new NotFoundException("El usuario no tiene alojamientos creados");
+        }
+
+        List<AccommodationDTO> accommodationDTOS = new ArrayList<>();
+
+        for (AccommodationEntity accommodation : accommodationEntities) {
+
+            if (accommodation.getUuidOwner().equals(uuid)) {
+                accommodationDTOS.add(accommodationConverter.toDtoWithRooms(accommodation));
+            }
+        }
+        return accommodationDTOS;
     }
 }

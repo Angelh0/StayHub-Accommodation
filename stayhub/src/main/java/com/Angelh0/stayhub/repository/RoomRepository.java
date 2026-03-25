@@ -22,6 +22,8 @@ public interface RoomRepository extends JpaRepository<RoomEntity, Long> {
     @Query("delete from RoomEntity r where r.uuid = :uuid")
     void deleteByUuid(UUID uuid);
 
-    List<RoomEntity> findByAccommodation_CityAndRoomAndCapacity(String city, int rooms, int capacity);
+    List<RoomEntity> findByAccommodation_CityAndRoomGreaterThanEqualAndCapacityGreaterThanEqual(String city, int room, int capacity);
+
+    List<RoomEntity> findByUuidOwner(UUID uuidOwner);
 
 }

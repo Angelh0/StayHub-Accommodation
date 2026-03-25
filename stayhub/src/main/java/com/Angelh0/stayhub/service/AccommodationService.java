@@ -19,4 +19,5 @@ public interface AccommodationService {
     void deleteAccommodation (UUID uuid);
     List<ResponseAccommodationDTO> getAccommodationByCity(String city);
     List<RoomDTO> getRooms(List<RoomEntity> rooms);
+    List<AccommodationDTO> getMyAccommodations(UUID uuid);
 }

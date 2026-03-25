@@ -1,5 +1,6 @@
 package com.Angelh0.stayhub.controller;
 
+import com.Angelh0.stayhub.dto.accommodation.AccommodationDTO;
 import com.Angelh0.stayhub.dto.accommodation.ResponseAccommodationDTO;
 import com.Angelh0.stayhub.dto.room.ResponseRoomDTO;
 import com.Angelh0.stayhub.dto.room.RoomDTO;
@@ -9,6 +10,7 @@ import com.Angelh0.stayhub.entity.RoomEntity;
 import com.Angelh0.stayhub.service.RoomService;
 import com.Angelh0.stayhub.service.SearchService;
 import jakarta.validation.Valid;
+import org.hibernate.validator.cfg.defs.UUIDDef;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -60,6 +62,13 @@ public class RoomController {
 
         roomService.deleteByUuid(uuid);
         return ResponseEntity.ok("Room with UUID: [" + uuid + "] deleted successfully");
+    }
+
+    @GetMapping("/getMyRooms")
+    public ResponseEntity<List<RoomDTO>> getMyRooms(Authentication authentication) {
+        UUID userUUID = UUID.fromString(authentication.getPrincipal().toString());
+        List<RoomDTO> roomDTO = roomService.getMyRooms(userUUID);
+        return new ResponseEntity<>(roomDTO, HttpStatus.OK);
     }
 
 
