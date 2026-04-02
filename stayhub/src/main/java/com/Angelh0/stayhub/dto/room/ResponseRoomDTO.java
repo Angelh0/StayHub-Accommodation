@@ -4,6 +4,7 @@ import com.Angelh0.stayhub.enums.RoomEnums.RoomType;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -11,6 +12,8 @@ import java.util.UUID;
 public class ResponseRoomDTO {
 
     private UUID uuid;
+    private UUID uuidAccommodation;
+    private String nameAccommodation;
     private UUID uuidOwner;
     private String city;
     private int room;
@@ -19,4 +22,5 @@ public class ResponseRoomDTO {
     private RoomType type;
     private double totalPrice;
     private double areaInSquareMeters;
+    private List<String> photos;
 }

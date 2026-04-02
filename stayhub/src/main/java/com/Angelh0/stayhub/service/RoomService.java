@@ -1,10 +1,7 @@
 package com.Angelh0.stayhub.service;
 
 import com.Angelh0.stayhub.dto.accommodation.UpdateAccommodationDTO;
-import com.Angelh0.stayhub.dto.room.ResponseRoomDTO;
-import com.Angelh0.stayhub.dto.room.RoomAdminDTO;
-import com.Angelh0.stayhub.dto.room.RoomDTO;
-import com.Angelh0.stayhub.dto.room.UpdateRoomDTO;
+import com.Angelh0.stayhub.dto.room.*;
 import com.Angelh0.stayhub.entity.RoomEntity;
 
 import java.util.List;
@@ -17,5 +14,7 @@ public interface RoomService {
     RoomDTO modifiedRooms(UpdateRoomDTO updateRoomDTO, UUID uuid, UUID userUUID);
     ResponseRoomDTO getRooms(UUID uuid);
     void deleteByUuid(UUID uuid);
-    List<RoomDTO> getMyRooms(UUID uuid);
+    List<RoomAndAccDTO> getMyRooms(UUID uuid);
+    String blockRoom(UUID roomUuid, UUID useruuid, CreateBlockDTO createBlockDTO);
+    RoomDTO getRoomsWithUuid(UUID uuid);
 }

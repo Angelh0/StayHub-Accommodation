@@ -14,4 +14,5 @@ public interface SearchService {
     List<ResponseAccommodationDTO> searchAdvanced(SearchRoomDTO searchRoomDTO, String city, int room, int capacity, LocalDate checkIn, LocalDate checkOut);
     List<ResponseRoomDTO> searchAdvancedRoom(UUID uuid);
     SearchRoomDTO searchGetRooms(UUID uuid);
+    SearchRoomDTO getLastSearch(UUID uuid);
 }

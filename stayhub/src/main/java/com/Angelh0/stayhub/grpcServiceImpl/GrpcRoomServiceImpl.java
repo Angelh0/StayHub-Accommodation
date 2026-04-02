@@ -27,6 +27,8 @@ public class GrpcRoomServiceImpl extends RoomServiceGrpc.RoomServiceImplBase {
                 .setPrice(room.getTotalPrice())
                 .setUuidOwner(room.getUuidOwner().toString())
                 .setType(ReservationType.valueOf(room.getType().toString()))
+                .setUuidAccommodation(room.getUuidAccommodation().toString())
+                .setNameAccommodation(room.getNameAccommodation())
                 .build();
 
         responseObserver.onNext(objectRoom);

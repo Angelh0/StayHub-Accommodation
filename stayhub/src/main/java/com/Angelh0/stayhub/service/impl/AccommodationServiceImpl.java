@@ -111,21 +111,24 @@ public class AccommodationServiceImpl implements AccommodationService {
                 accommodation.setDescription(updateAccommodationDTO.getDescription());
             }
 
-            Integer minStay = updateAccommodationDTO.getMinStay() != null ? updateAccommodationDTO.getMinStay() : accommodation.getMinStay();
-            Integer maxStay = updateAccommodationDTO.getMaxStay() != null ? updateAccommodationDTO.getMaxStay() : accommodation.getMaxStay();
+            if (updateAccommodationDTO.getMinStay() != null || updateAccommodationDTO.getMaxStay() != null) {
 
-            if (minStay < 1) {
-                throw new InvalidValues("La estancia minima no puede ser inferior a 1");
+                Integer minStay = updateAccommodationDTO.getMinStay() != null ? updateAccommodationDTO.getMinStay() : accommodation.getMinStay();
+                Integer maxStay = updateAccommodationDTO.getMaxStay() != null ? updateAccommodationDTO.getMaxStay() : accommodation.getMaxStay();
+
+                if (minStay < 1) {
+                    throw new InvalidValues("La estancia minima no puede ser inferior a 1");
+                }
+
+                if (maxStay < minStay) {
+                    throw new InvalidValues("La estancia no puede ser inferior a la minima");
+                }
+
+                accommodation.setMinStay(minStay);
+                accommodation.setMaxStay(maxStay);
+                accommodationRepository.save(accommodation);
             }
 
-            if (maxStay < minStay) {
-                throw new InvalidValues("La estancia no puede ser inferior a la minima");
-            }
-
-            accommodation.setMinStay(minStay);
-            accommodation.setMaxStay(maxStay);
-
-            accommodationRepository.save(accommodation);
 
             if (updateAccommodationDTO.getCalendar() != null) {
                 AccommodationCalendarDTO calendarDTO = updateAccommodationDTO.getCalendar();
@@ -224,7 +227,6 @@ public class AccommodationServiceImpl implements AccommodationService {
 
     @Override
     public List<AccommodationDTO> getMyAccommodations(UUID uuid) {
-
 
         List<AccommodationEntity> accommodationEntities = accommodationRepository.findByUuidOwner(uuid);
 

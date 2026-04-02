@@ -7,6 +7,7 @@ import com.Angelh0.stayhub.service.SearchService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -55,6 +56,14 @@ public class SearchController {
     public ResponseEntity<List<ResponseRoomDTO>> searchAdvancedRoom(@PathVariable UUID uuid) {
         List<ResponseRoomDTO> room = searchService.searchAdvancedRoom(uuid);
         ResponseEntity<List<ResponseRoomDTO>> responseEntity = new ResponseEntity<>(room, HttpStatus.OK);
+        return responseEntity;
+    }
+
+    @GetMapping("/lastSearch")
+    public ResponseEntity<SearchRoomDTO> getLastSearch(Authentication authentication) {
+        UUID uuidUser = UUID.fromString(authentication.getPrincipal().toString());
+        SearchRoomDTO roomDTO = searchService.getLastSearch(uuidUser);
+        ResponseEntity<SearchRoomDTO> responseEntity = new ResponseEntity<>(roomDTO, HttpStatus.OK);
         return responseEntity;
     }
 }

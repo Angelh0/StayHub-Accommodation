@@ -3,16 +3,19 @@ package com.Angelh0.stayhub.service.impl;
 import com.Angelh0.stayhub.converter.RoomConverter;
 import com.Angelh0.stayhub.dto.room.*;
 import com.Angelh0.stayhub.entity.RoomEntity;
+import com.Angelh0.stayhub.enums.RoomEnums.BlockType;
 import com.Angelh0.stayhub.enums.RoomEnums.RoomStatus;
 import com.Angelh0.stayhub.exception.NotFoundException;
 import com.Angelh0.stayhub.exception.RoomException.RoomContainsReservation;
 import com.Angelh0.stayhub.exception.SearchException.DateValidate;
+import com.Angelh0.stayhub.grpcClient.GrpcClientBlockRooms;
 import com.Angelh0.stayhub.grpcClient.GrpcClientFutureReservation;
 import com.Angelh0.stayhub.repository.AccommodationRepository;
 import com.Angelh0.stayhub.repository.RoomRepository;
 import com.Angelh0.stayhub.service.AccommodationDraftService;
 import com.Angelh0.stayhub.service.BusinessService;
 import com.Angelh0.stayhub.service.RoomService;
+import com.checkAvailability.grpc.ReservationStatusChangeResponse;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -45,6 +48,9 @@ public class RoomServiceImpl implements RoomService {
 
     @Autowired
     private AccommodationDraftService accommodationDraftService;
+
+    @Autowired
+    private GrpcClientBlockRooms grpcClientBlockRooms;
 
 
     @Override
@@ -112,18 +118,19 @@ public class RoomServiceImpl implements RoomService {
                 businessService.validateAccommodationStatus(uuid);
             }
 
-            if (updateRoomDTO.getPhotos() != null){
-                updateRoomDTO.setPhotos(updateRoomDTO.getPhotos());
-                updateRoomDTO.setPhotos(updateRoomDTO.getPhotos());
+            if (updateRoomDTO.getPhotos() != null) {
+                entity.setPhotos(updateRoomDTO.getPhotos());
             }
 
             entity.setUpdatedAt(LocalDateTime.now());
             roomRepository.save(entity);
 
             return roomConverter.convertEntityToDTO(entity);
+
         } throw new NotFoundException("No se ha encontrado ninguna habitacion con el UUID introducido");
     }
 
+    // Devuelve TotalPrice
     @Override
     public ResponseRoomDTO getRooms(UUID uuid) {
 
@@ -133,6 +140,20 @@ public class RoomServiceImpl implements RoomService {
             RoomEntity room = roomEntity.get();
 
             return roomConverter.responseRoomToDTO(room);
+        }
+        throw new NotFoundException("No se ha encontrado ninguna habitacion con el UUID introducido");
+    }
+
+    // Devuelve Price
+    @Override
+    public RoomDTO getRoomsWithUuid(UUID uuid) {
+
+        Optional<RoomEntity> roomEntity = roomRepository.findByUuid(uuid);
+
+        if (roomEntity.isPresent()) {
+            RoomEntity room = roomEntity.get();
+
+            return roomConverter.convertEntityToDTO(room);
         }
         throw new NotFoundException("No se ha encontrado ninguna habitacion con el UUID introducido");
     }
@@ -155,23 +176,37 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public List<RoomDTO> getMyRooms(UUID uuid) {
-
+    public List<RoomAndAccDTO> getMyRooms(UUID uuid) {
         List<RoomEntity> roomEntities = roomRepository.findByUuidOwner(uuid);
 
         if (roomEntities.isEmpty()) {
             throw new NotFoundException("El usuario no tiene habitaciones creadas");
         }
 
-        List<RoomDTO> roomDTOS = new ArrayList<>();
+        List<RoomAndAccDTO> roomDTOS = new ArrayList<>();
 
         for (RoomEntity room : roomEntities) {
-
             if (room.getUuidOwner().equals(uuid)) {
-                roomDTOS.add(roomConverter.convertEntityToDTO(room));
+                RoomAndAccDTO dto = roomConverter.convertToDTO(room);
+                roomDTOS.add(dto);
             }
         }
 
         return roomDTOS;
+    }
+
+
+    @Override
+    public String blockRoom(UUID roomUuid, UUID userUuid, CreateBlockDTO blockDTO) {
+        roomRepository.findByUuidAndUuidOwner(roomUuid, userUuid)
+                .orElseThrow(() -> new NotFoundException("No se ha encontrado la habitación"));
+
+        ReservationStatusChangeResponse response = grpcClientBlockRooms.sendBlockRequest(roomUuid, userUuid, blockDTO);
+
+        if (!response.getAvailable()) {
+            return "ERROR: " + response.getMessage();
+        }
+
+        return "Bloqueo creado correctamente";
     }
 }

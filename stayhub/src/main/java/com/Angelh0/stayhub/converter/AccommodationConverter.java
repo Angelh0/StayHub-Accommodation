@@ -34,6 +34,16 @@ public class AccommodationConverter {
         responseAccommodationDTO.setPriceMin(accommodationEntity.getPriceMin());
         responseAccommodationDTO.setCreatedAt(accommodationEntity.getCreatedAt());
         responseAccommodationDTO.setUpdatedAt(accommodationEntity.getUpdatedAt());
+        responseAccommodationDTO.setMinStay(accommodationEntity.getMinStay());
+        responseAccommodationDTO.setMaxStay(accommodationEntity.getMaxStay());
+        responseAccommodationDTO.setAvailabilityCalendar(calendarConverter.entityToDTO(accommodationEntity.getCalendar()));
+        responseAccommodationDTO.setPhotos(accommodationEntity.getPhotos());
+        responseAccommodationDTO.setRooms(
+                accommodationEntity.getRooms()
+                        .stream()
+                        .map(roomConverter::convertEntityToDTO)
+                        .toList()
+        );
 
         return responseAccommodationDTO;
     }

@@ -44,6 +44,4 @@ public class AccommodationDTO {
     private AccommodationCalendarDTO availabilityCalendar;
     private List<String> photos;
     private List<RoomDTO> rooms;
-
-
 }

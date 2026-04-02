@@ -115,6 +115,19 @@ public class SearchServiceImpl implements SearchService {
     }
 
     @Override
+    public SearchRoomDTO getLastSearch(UUID uuid) {
+        Optional<LastSearchEntity> lastSearch = searchRoomRepository.findByUuidUser(uuid);
+
+        if (lastSearch.isPresent()) {
+            LastSearchEntity lastSearchEntity = lastSearch.get();
+
+            return searchConverter.convertToDTO(lastSearchEntity);
+        }
+
+        return null;
+    }
+
+    @Override
     public SearchRoomDTO getChecks() {
         Optional<LastSearchEntity> search = searchRoomRepository.findById(1);
 

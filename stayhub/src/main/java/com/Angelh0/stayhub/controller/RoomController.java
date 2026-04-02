@@ -2,9 +2,7 @@ package com.Angelh0.stayhub.controller;
 
 import com.Angelh0.stayhub.dto.accommodation.AccommodationDTO;
 import com.Angelh0.stayhub.dto.accommodation.ResponseAccommodationDTO;
-import com.Angelh0.stayhub.dto.room.ResponseRoomDTO;
-import com.Angelh0.stayhub.dto.room.RoomDTO;
-import com.Angelh0.stayhub.dto.room.UpdateRoomDTO;
+import com.Angelh0.stayhub.dto.room.*;
 import com.Angelh0.stayhub.dto.search.SearchRoomDTO;
 import com.Angelh0.stayhub.entity.RoomEntity;
 import com.Angelh0.stayhub.service.RoomService;
@@ -57,21 +55,36 @@ public class RoomController {
         return responseEntity;
     }
 
+    @GetMapping("/get-Rooms/{uuid}")
+    public ResponseEntity<RoomDTO> getRoomsWithUuid(@PathVariable UUID uuid) {
+        RoomDTO roomDTO = roomService.getRoomsWithUuid(uuid);
+        ResponseEntity<RoomDTO> responseEntity = new ResponseEntity<>(roomDTO, HttpStatus.OK);
+        return responseEntity;
+    }
+
     @DeleteMapping("deleteRoom/{uuid}")
     public ResponseEntity<String> deleteRoomByUuid(@PathVariable UUID uuid) {
-
         roomService.deleteByUuid(uuid);
         return ResponseEntity.ok("Room with UUID: [" + uuid + "] deleted successfully");
     }
 
     @GetMapping("/getMyRooms")
-    public ResponseEntity<List<RoomDTO>> getMyRooms(Authentication authentication) {
+    public ResponseEntity<List<RoomAndAccDTO>> getMyRooms(Authentication authentication) {
         UUID userUUID = UUID.fromString(authentication.getPrincipal().toString());
-        List<RoomDTO> roomDTO = roomService.getMyRooms(userUUID);
+        List<RoomAndAccDTO> roomDTO = roomService.getMyRooms(userUUID);
         return new ResponseEntity<>(roomDTO, HttpStatus.OK);
     }
 
+    @PostMapping("/room-block/{uuid}")
+    public ResponseEntity<String> blockRoom(@PathVariable UUID uuid, @RequestBody CreateBlockDTO blockDTO, Authentication authentication) {
+        UUID userUUID = UUID.fromString(authentication.getPrincipal().toString());
+        String result = roomService.blockRoom(uuid, userUUID, blockDTO);
 
+        if (result.startsWith("ERROR:")) {
+            return new ResponseEntity<>(result, HttpStatus.CONFLICT);
+        }
 
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
 }
 
