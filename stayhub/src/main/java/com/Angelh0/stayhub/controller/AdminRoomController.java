@@ -1,6 +1,6 @@
 package com.Angelh0.stayhub.controller;
 
-import com.Angelh0.stayhub.dto.RoomAdminDTO;
+import com.Angelh0.stayhub.dto.room.RoomAdminDTO;
 import com.Angelh0.stayhub.service.RoomService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

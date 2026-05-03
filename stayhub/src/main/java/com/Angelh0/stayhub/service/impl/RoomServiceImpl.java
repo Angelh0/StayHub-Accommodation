@@ -1,25 +1,28 @@
 package com.Angelh0.stayhub.service.impl;
 
 import com.Angelh0.stayhub.converter.RoomConverter;
-import com.Angelh0.stayhub.converter.SearchConverter;
-import com.Angelh0.stayhub.dto.RoomAdminDTO;
-import com.Angelh0.stayhub.dto.RoomDTO;
-import com.Angelh0.stayhub.dto.SearchRoomDTO;
+import com.Angelh0.stayhub.dto.room.*;
 import com.Angelh0.stayhub.entity.RoomEntity;
-import com.Angelh0.stayhub.entity.SearchRoomEntity;
-import com.Angelh0.stayhub.enums.StatusType;
+import com.Angelh0.stayhub.enums.RoomEnums.BlockType;
+import com.Angelh0.stayhub.enums.RoomEnums.RoomStatus;
+import com.Angelh0.stayhub.exception.NotFoundException;
+import com.Angelh0.stayhub.exception.RoomException.RoomContainsReservation;
+import com.Angelh0.stayhub.exception.SearchException.DateValidate;
+import com.Angelh0.stayhub.grpcClient.GrpcClientBlockRooms;
+import com.Angelh0.stayhub.grpcClient.GrpcClientFutureReservation;
 import com.Angelh0.stayhub.repository.AccommodationRepository;
 import com.Angelh0.stayhub.repository.RoomRepository;
-import com.Angelh0.stayhub.repository.SearchRoomRepository;
+import com.Angelh0.stayhub.service.AccommodationDraftService;
 import com.Angelh0.stayhub.service.BusinessService;
 import com.Angelh0.stayhub.service.RoomService;
+import com.checkAvailability.grpc.ReservationStatusChangeResponse;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import com.Angelh0.stayhub.entity.AccommodationEntity;
 
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -41,15 +44,18 @@ public class RoomServiceImpl implements RoomService {
     private BusinessService businessService;
 
     @Autowired
-    private SearchRoomRepository searchRoomRepository;
+    private GrpcClientFutureReservation grpcClientFutureReservation;
 
     @Autowired
-    private SearchConverter searchConverter;
+    private AccommodationDraftService accommodationDraftService;
+
+    @Autowired
+    private GrpcClientBlockRooms grpcClientBlockRooms;
 
 
     @Override
-    public RoomDTO createRoom(RoomDTO roomDTO, UUID uuid) {
-        Optional<AccommodationEntity> accommodationEntity = accommodationRepository.findByUuid(uuid);
+    public RoomDTO createRoom(RoomDTO roomDTO, UUID uuid, UUID userUUID) {
+        Optional<AccommodationEntity> accommodationEntity = accommodationRepository.findByUuidAndUuidOwner(uuid, userUUID);
 
         if (accommodationEntity.isPresent()) {
             AccommodationEntity accommodation = accommodationEntity.get();
@@ -58,11 +64,16 @@ public class RoomServiceImpl implements RoomService {
             room = roomRepository.save(room);
             accommodation.getRooms().add(room);
             businessService.updateValues(accommodation);
+            room.setUuidOwner(userUUID);
+            room.setCreatedAt(LocalDateTime.now());
             room = roomRepository.save(room);
             roomDTO = roomConverter.convertEntityToDTO(room);
+            businessService.validateAccommodationStatus(roomDTO.getUuid());
+            accommodationDraftService.checkAddRooms(accommodation.getUuid());
             return roomDTO;
+        } else {
+            throw new NotFoundException("El alojamiento con el que quiere relacionar está habitacion no existe");
         }
-        return null;
     }
 
 
@@ -79,61 +90,72 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public RoomDTO modifiedRooms(RoomDTO roomDTO, UUID uuid) {
+    public RoomDTO modifiedRooms(UpdateRoomDTO updateRoomDTO, UUID uuid, UUID userUUID) {
 
-        Optional<RoomEntity> roomEntity = roomRepository.findByUuid(uuid);
+        Optional<RoomEntity> roomEntity = roomRepository.findByUuidAndUuidOwner(uuid, userUUID);
 
         if (roomEntity.isPresent()) {
             RoomEntity entity = roomEntity.get();
 
-            if (roomDTO.getRoom() != 0) {
-                entity.setRoom(roomDTO.getRoom());
+            if (updateRoomDTO.getCapacity() != 0) {
+                entity.setCapacity(updateRoomDTO.getCapacity());
             }
 
-            if (roomDTO.getCapacity() != 0) {
-                entity.setCapacity(roomDTO.getCapacity());
+            if (updateRoomDTO.getBeds() != 0) {
+                entity.setBeds(updateRoomDTO.getBeds());
             }
 
-            if (roomDTO.getBeds() != 0) {
-                entity.setBeds(roomDTO.getBeds());
+            if (updateRoomDTO.getPrice() != 0) {
+                entity.setPrice(updateRoomDTO.getPrice());
             }
 
-            if (roomDTO.getType() != null) {
-                entity.setType(roomDTO.getType());
+            if (updateRoomDTO.getRoomStatus() == RoomStatus.Closed) {
+                if (updateRoomDTO.getBlockStartDate() == null || updateRoomDTO.getBlockEndDate() == null) {
+                    throw new NotFoundException("Los bloqueos deben contener una fecha de inicio y de fin");
+                }
+                DateValidate.validateBlockDate(updateRoomDTO.getBlockStartDate(), updateRoomDTO.getBlockEndDate());
+                businessService.validateRoomStatus(uuid, userUUID, String.valueOf(updateRoomDTO.getBlockStartDate()), String.valueOf(updateRoomDTO.getBlockEndDate()));
+                businessService.validateAccommodationStatus(uuid);
             }
 
-            if (roomDTO.getPrice() != 0) {
-                entity.setPrice(roomDTO.getPrice());
+            if (updateRoomDTO.getPhotos() != null) {
+                entity.setPhotos(updateRoomDTO.getPhotos());
             }
 
-            if (roomDTO.getAreaInSquareMeters() != 0) {
-                entity.setAreaInSquareMeters(roomDTO.getAreaInSquareMeters());
-            }
-
-            if (roomDTO.getStatus() != null) {
-                entity.setStatus(roomDTO.getStatus());
-            }
-
+            entity.setUpdatedAt(LocalDateTime.now());
             roomRepository.save(entity);
 
             return roomConverter.convertEntityToDTO(entity);
-        }
-        return null;
+
+        } throw new NotFoundException("No se ha encontrado ninguna habitacion con el UUID introducido");
     }
 
+    // Devuelve TotalPrice
     @Override
-    public RoomDTO getRooms(UUID uuid) {
+    public ResponseRoomDTO getRooms(UUID uuid) {
 
         Optional<RoomEntity> roomEntity = roomRepository.findByUuid(uuid);
 
         if (roomEntity.isPresent()) {
             RoomEntity room = roomEntity.get();
-            if (room.getStatus() == StatusType.Disable) {
-                return null;
-            }
+
+            return roomConverter.responseRoomToDTO(room);
+        }
+        throw new NotFoundException("No se ha encontrado ninguna habitacion con el UUID introducido");
+    }
+
+    // Devuelve Price
+    @Override
+    public RoomDTO getRoomsWithUuid(UUID uuid) {
+
+        Optional<RoomEntity> roomEntity = roomRepository.findByUuid(uuid);
+
+        if (roomEntity.isPresent()) {
+            RoomEntity room = roomEntity.get();
+
             return roomConverter.convertEntityToDTO(room);
         }
-        return null;
+        throw new NotFoundException("No se ha encontrado ninguna habitacion con el UUID introducido");
     }
 
     @Override
@@ -143,9 +165,48 @@ public class RoomServiceImpl implements RoomService {
         Optional<RoomEntity> room = roomRepository.findByUuid(uuid);
 
         if (room.isPresent()) {
+            RoomAvailabilityDTO availabilityDTO = grpcClientFutureReservation.getFutureReservation(room.get().getUuid());
+            if (availabilityDTO.isAvailable()) {
+                throw new RoomContainsReservation("La habitacion seleccionada, contiene reservas activas posteriores a la fecha actual.");
+            }
             roomRepository.deleteByUuid(uuid);
+        } else {
+            throw new NotFoundException("No se ha encontrado ninguna habitacion con el UUID introducido");
         }
     }
 
+    @Override
+    public List<RoomAndAccDTO> getMyRooms(UUID uuid) {
+        List<RoomEntity> roomEntities = roomRepository.findByUuidOwner(uuid);
 
+        if (roomEntities.isEmpty()) {
+            throw new NotFoundException("El usuario no tiene habitaciones creadas");
+        }
+
+        List<RoomAndAccDTO> roomDTOS = new ArrayList<>();
+
+        for (RoomEntity room : roomEntities) {
+            if (room.getUuidOwner().equals(uuid)) {
+                RoomAndAccDTO dto = roomConverter.convertToDTO(room);
+                roomDTOS.add(dto);
+            }
+        }
+
+        return roomDTOS;
+    }
+
+
+    @Override
+    public String blockRoom(UUID roomUuid, UUID userUuid, CreateBlockDTO blockDTO) {
+        roomRepository.findByUuidAndUuidOwner(roomUuid, userUuid)
+                .orElseThrow(() -> new NotFoundException("No se ha encontrado la habitación"));
+
+        ReservationStatusChangeResponse response = grpcClientBlockRooms.sendBlockRequest(roomUuid, userUuid, blockDTO);
+
+        if (!response.getAvailable()) {
+            return "ERROR: " + response.getMessage();
+        }
+
+        return "Bloqueo creado correctamente";
+    }
 }

@@ -1,22 +1,38 @@
 package com.Angelh0.stayhub.service.impl;
 
+import com.Angelh0.stayhub.converter.AccommodationCalendarConverter;
 import com.Angelh0.stayhub.converter.AccommodationConverter;
-import com.Angelh0.stayhub.dto.AccommodationDTO;
-import com.Angelh0.stayhub.dto.RequestAccommodationDTO;
-import com.Angelh0.stayhub.dto.ResponseAccommodationDTO;
+import com.Angelh0.stayhub.converter.RoomConverter;
+import com.Angelh0.stayhub.dto.DraftAccommodation.AccommodationCalendarDTO;
+import com.Angelh0.stayhub.dto.accommodation.AccommodationDTO;
+import com.Angelh0.stayhub.dto.accommodation.RequestAccommodationDTO;
+import com.Angelh0.stayhub.dto.accommodation.ResponseAccommodationDTO;
+import com.Angelh0.stayhub.dto.accommodation.UpdateAccommodationDTO;
+import com.Angelh0.stayhub.dto.room.RoomAvailabilityDTO;
+import com.Angelh0.stayhub.dto.room.RoomDTO;
+import com.Angelh0.stayhub.entity.AccommodationCalendarEntity;
+import com.Angelh0.stayhub.entity.AccommodationDraftEntity;
 import com.Angelh0.stayhub.entity.AccommodationEntity;
+import com.Angelh0.stayhub.entity.RoomEntity;
+import com.Angelh0.stayhub.exception.AccommodationException.AccommodationContainsRoom;
+import com.Angelh0.stayhub.exception.AccommodationException.AccommodationEmptyValues;
+import com.Angelh0.stayhub.exception.InvalidValues;
+import com.Angelh0.stayhub.exception.NotFoundException;
+import com.Angelh0.stayhub.grpcClient.GrpcClientValidateCountry;
+import com.Angelh0.stayhub.repository.AccommodationCalendarRepository;
+import com.Angelh0.stayhub.repository.AccommodationDraftRepository;
 import com.Angelh0.stayhub.repository.AccommodationRepository;
-import com.Angelh0.stayhub.repository.RoomRepository;
+import com.Angelh0.stayhub.service.AccommodationDraftService;
 import com.Angelh0.stayhub.service.AccommodationService;
 import com.Angelh0.stayhub.service.BusinessService;
+import com.checkAvailability.grpc.RoomAvailability;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Service
 public class AccommodationServiceImpl implements AccommodationService {
@@ -30,12 +46,31 @@ public class AccommodationServiceImpl implements AccommodationService {
     @Autowired
     private BusinessService businessService;
 
+    @Autowired
+    private AccommodationDraftService accommodationDraftService;
+
+    @Autowired
+    private RoomConverter roomConverter;
+
+    @Autowired
+    private GrpcClientValidateCountry grpcClientValidateCountry;
+
+    @Autowired
+    private AccommodationCalendarRepository accommodationCalendarRepository;
+
     @Override
-    public RequestAccommodationDTO createAccommodation(RequestAccommodationDTO requestAccommodationDTO) {
+    public RequestAccommodationDTO createAccommodation(RequestAccommodationDTO requestAccommodationDTO, UUID userUUID) {
 
         AccommodationEntity accommodationEntity = accommodationConverter.toEntityRequest(requestAccommodationDTO);
+        RoomAvailabilityDTO validate = grpcClientValidateCountry.validateValues(requestAccommodationDTO.getCity(), requestAccommodationDTO.getCountry());
+        if (!validate.isAvailable()) {
+            throw new NotFoundException(validate.getMessage());
+        }
+        accommodationEntity.setUuidOwner(userUUID);
+        accommodationEntity.setCreatedAt(LocalDateTime.now());
         accommodationEntity = accommodationRepository.save(accommodationEntity);
         requestAccommodationDTO = accommodationConverter.toDtoRequest(accommodationEntity);
+        accommodationDraftService.checkBasicCreate(requestAccommodationDTO.getUuid());
         return requestAccommodationDTO;
     }
 
@@ -55,35 +90,82 @@ public class AccommodationServiceImpl implements AccommodationService {
     }
 
     @Override
-    public ResponseAccommodationDTO modifiedAccommodation(RequestAccommodationDTO requestAccommodationDTO, UUID uuid) {
+    public ResponseAccommodationDTO modifiedAccommodation(UpdateAccommodationDTO updateAccommodationDTO, UUID uuid, UUID uuidUser) {
 
-        Optional<AccommodationEntity> optionalAccommodation = accommodationRepository.findByUuid(uuid);
+        Optional<AccommodationEntity> optionalAccommodation = accommodationRepository.findByUuidAndUuidOwner(uuid, uuidUser);
 
         if (optionalAccommodation.isPresent()) {
             AccommodationEntity accommodation = optionalAccommodation.get();
 
-            if (requestAccommodationDTO.getName() != null) {
-                accommodation.setName(requestAccommodationDTO.getName());
-            }
-            if (requestAccommodationDTO.getType() != null) {
-                accommodation.setType(requestAccommodationDTO.getType());
-            }
-            if (requestAccommodationDTO.getDescription() != null) {
-                accommodation.setDescription(requestAccommodationDTO.getDescription());
-            }
-            if (requestAccommodationDTO.getCity() != null) {
-                accommodation.setCity(requestAccommodationDTO.getCity());
-            }
-            if (requestAccommodationDTO.getCountry() != null) {
-                accommodation.setCountry(requestAccommodationDTO.getCountry());
+            if (updateAccommodationDTO.getName() != null) {
+                if (updateAccommodationDTO.getName().trim().isEmpty()) {
+                    throw new AccommodationEmptyValues("El nombre no puede estar vacio");
+                }
+                accommodation.setName(updateAccommodationDTO.getName());
             }
 
+            if (updateAccommodationDTO.getDescription() != null) {
+                if (updateAccommodationDTO.getDescription().trim().isEmpty()) {
+                    throw new AccommodationEmptyValues("La descripcion no puede estar vacia");
+                }
+                accommodation.setDescription(updateAccommodationDTO.getDescription());
+            }
+
+            if (updateAccommodationDTO.getMinStay() != null || updateAccommodationDTO.getMaxStay() != null) {
+
+                Integer minStay = updateAccommodationDTO.getMinStay() != null ? updateAccommodationDTO.getMinStay() : accommodation.getMinStay();
+                Integer maxStay = updateAccommodationDTO.getMaxStay() != null ? updateAccommodationDTO.getMaxStay() : accommodation.getMaxStay();
+
+                if (minStay < 1) {
+                    throw new InvalidValues("La estancia minima no puede ser inferior a 1");
+                }
+
+                if (maxStay < minStay) {
+                    throw new InvalidValues("La estancia no puede ser inferior a la minima");
+                }
+
+                accommodation.setMinStay(minStay);
+                accommodation.setMaxStay(maxStay);
+                accommodationRepository.save(accommodation);
+            }
+
+
+            if (updateAccommodationDTO.getCalendar() != null) {
+                AccommodationCalendarDTO calendarDTO = updateAccommodationDTO.getCalendar();
+
+                if (calendarDTO.getCalendarMonth() == null || calendarDTO.getCalendarMonth().isEmpty()) {
+                    throw new InvalidValues("El calendario debe contener mínimo 1 mes de disponibilidad");
+                }
+
+                if (accommodation.getCalendar() == null) {
+                    AccommodationCalendarEntity newCalendar = new AccommodationCalendarEntity();
+                    newCalendar.setAccommodation(accommodation);
+                    accommodation.setCalendar(newCalendar);
+                }
+
+                accommodation.getCalendar().setCalendarMonth(calendarDTO.getCalendarMonth());
+
+                accommodationCalendarRepository.save(accommodation.getCalendar());
+                accommodationRepository.save(accommodation);
+            }
+
+            if (updateAccommodationDTO.getPhotos() != null) {
+
+                if (updateAccommodationDTO.getPhotos().isEmpty()) {
+                    throw new InvalidValues("El alojamiento debe contener minimo 1 foto");
+                }
+                if (!updateAccommodationDTO.getPhotos().isEmpty()) {
+                    updateAccommodationDTO.setPhotos(updateAccommodationDTO.getPhotos());
+                }
+                accommodation.setPhotos(updateAccommodationDTO.getPhotos());
+            }
+
+            accommodation.setUpdatedAt(LocalDateTime.now());
             accommodation = accommodationRepository.save(accommodation);
 
             return accommodationConverter.responseToDTO(accommodation);
         }
-
-        return null;
+        throw new NotFoundException("No se ha encontrado ningun alojamiento con el UUID introducido");
     }
 
 
@@ -92,10 +174,17 @@ public class AccommodationServiceImpl implements AccommodationService {
     public void deleteAccommodation(UUID uuid) {
 
         Optional<AccommodationEntity> accommodation = accommodationRepository.findByUuid(uuid);
-        String comment;
 
         if (accommodation.isPresent()) {
-            accommodationRepository.deleteByUuid(uuid);
+            AccommodationEntity accommodationEntity = accommodation.get();
+
+            if (!accommodationEntity.getRooms().isEmpty()) {
+                throw new AccommodationContainsRoom("No se puede eliminar un alojamiento sin borrar previamente sus habitaciones");
+            } else {
+                accommodationRepository.deleteByUuid(uuid);
+            }
+        } else {
+            throw new NotFoundException("No se ha encontrado ningun alojamiento con el UUID introducido");
         }
     }
 
@@ -107,9 +196,10 @@ public class AccommodationServiceImpl implements AccommodationService {
         if (entity.isPresent()) {
             businessService.updateValues(entity.get());
             AccommodationDTO dto = accommodationConverter.toDtoWithRooms(entity.get());
-                    return dto;
+            return dto;
+        } else {
+            throw new NotFoundException("No se ha encontrado el UUID introducido");
         }
-        return null;
     }
 
     @Override
@@ -125,9 +215,33 @@ public class AccommodationServiceImpl implements AccommodationService {
         return accDTO;
     }
 
+    @Override
+    public List<RoomDTO> getRooms(List<RoomEntity> rooms) {
+        List<RoomDTO> result = new ArrayList<>();
+
+        for (RoomEntity room : rooms) {
+            result.add(roomConverter.convertEntityToDTO(room));
+        }
+        return result;
+    }
+
+    @Override
+    public List<AccommodationDTO> getMyAccommodations(UUID uuid) {
+
+        List<AccommodationEntity> accommodationEntities = accommodationRepository.findByUuidOwner(uuid);
+
+        if (accommodationEntities.isEmpty()) {
+            throw new NotFoundException("El usuario no tiene alojamientos creados");
+        }
+
+        List<AccommodationDTO> accommodationDTOS = new ArrayList<>();
+
+        for (AccommodationEntity accommodation : accommodationEntities) {
+
+            if (accommodation.getUuidOwner().equals(uuid)) {
+                accommodationDTOS.add(accommodationConverter.toDtoWithRooms(accommodation));
+            }
+        }
+        return accommodationDTOS;
+    }
 }
-
-
-
-
-

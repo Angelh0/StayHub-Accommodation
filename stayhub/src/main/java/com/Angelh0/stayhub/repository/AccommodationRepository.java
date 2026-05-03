@@ -13,6 +13,9 @@ public interface AccommodationRepository extends JpaRepository<AccommodationEnti
     List<AccommodationEntity> uuid(UUID uuid);
     List<AccommodationEntity> findByCity(String city);
     Optional<AccommodationEntity> findByUuid(UUID uuid);
-
     void deleteByUuid(UUID uuid);
+
+    Optional<AccommodationEntity> findByUuidAndUuidOwner(UUID uuid, UUID uuidOwner);
+
+    List<AccommodationEntity> findByUuidOwner(UUID uuidOwner);
 }

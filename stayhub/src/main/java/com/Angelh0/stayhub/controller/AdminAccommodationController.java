@@ -1,11 +1,11 @@
 package com.Angelh0.stayhub.controller;
 
-import com.Angelh0.stayhub.dto.AccommodationDTO;
 import com.Angelh0.stayhub.service.AccommodationService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.Angelh0.stayhub.dto.ResponseAccommodationDTO;
+import com.Angelh0.stayhub.dto.accommodation.ResponseAccommodationDTO;
 
 
 import java.util.List;
@@ -32,7 +32,7 @@ public class AdminAccommodationController {
     public ResponseEntity<String> deleteAccommodation(@PathVariable UUID uuid) {
 
         accommodationService.deleteAccommodation(uuid);
-        return ResponseEntity.ok("Accommodation with UUID: [" + uuid + "] deleted successfully");
+        return ResponseEntity.ok("Alojamiento con UUID: [" + uuid + "] eliminado correctamente");
     }
 
     @GetMapping("admin/getAccommodation/search/{city}")

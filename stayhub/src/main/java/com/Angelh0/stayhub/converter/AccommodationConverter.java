@@ -1,8 +1,9 @@
 package com.Angelh0.stayhub.converter;
 
-import com.Angelh0.stayhub.dto.AccommodationDTO;
-import com.Angelh0.stayhub.dto.RequestAccommodationDTO;
-import com.Angelh0.stayhub.dto.ResponseAccommodationDTO;
+import com.Angelh0.stayhub.dto.accommodation.AccommodationDTO;
+import com.Angelh0.stayhub.dto.accommodation.RequestAccommodationDTO;
+import com.Angelh0.stayhub.dto.accommodation.ResponseAccommodationDTO;
+import com.Angelh0.stayhub.entity.AccommodationCalendarEntity;
 import com.Angelh0.stayhub.entity.AccommodationEntity;
 import org.springframework.stereotype.Component;
 
@@ -10,10 +11,12 @@ import org.springframework.stereotype.Component;
 public class AccommodationConverter {
 
     private final RoomConverter roomConverter;
+    private final AccommodationCalendarConverter calendarConverter;
 
-    public AccommodationConverter(RoomConverter roomConverter) {
+    public AccommodationConverter(RoomConverter roomConverter, AccommodationCalendarConverter calendarConverter) {
 
         this.roomConverter = roomConverter;
+        this.calendarConverter = calendarConverter;
     }
 
     // Converter sin listado de alojamientos
@@ -29,6 +32,19 @@ public class AccommodationConverter {
         responseAccommodationDTO.setAvailability(accommodationEntity.getAvailability());
         responseAccommodationDTO.setPriceMax(accommodationEntity.getPriceMax());
         responseAccommodationDTO.setPriceMin(accommodationEntity.getPriceMin());
+        responseAccommodationDTO.setCreatedAt(accommodationEntity.getCreatedAt());
+        responseAccommodationDTO.setUpdatedAt(accommodationEntity.getUpdatedAt());
+        responseAccommodationDTO.setMinStay(accommodationEntity.getMinStay());
+        responseAccommodationDTO.setMaxStay(accommodationEntity.getMaxStay());
+        responseAccommodationDTO.setAvailabilityCalendar(calendarConverter.entityToDTO(accommodationEntity.getCalendar()));
+        responseAccommodationDTO.setPhotos(accommodationEntity.getPhotos());
+        responseAccommodationDTO.setRooms(
+                accommodationEntity.getRooms()
+                        .stream()
+                        .map(roomConverter::convertEntityToDTO)
+                        .toList()
+        );
+
         return responseAccommodationDTO;
     }
 
@@ -45,6 +61,13 @@ public class AccommodationConverter {
         accommodationDTO.setAvailability(accommodationEntity.getAvailability());
         accommodationDTO.setPriceMax(accommodationEntity.getPriceMax());
         accommodationDTO.setPriceMin(accommodationEntity.getPriceMin());
+        accommodationDTO.setStatus(accommodationEntity.getStatus());
+        accommodationDTO.setMinStay(accommodationEntity.getMinStay());
+        accommodationDTO.setMaxStay(accommodationEntity.getMaxStay());
+        accommodationDTO.setAvailabilityCalendar(calendarConverter.entityToDTO(accommodationEntity.getCalendar()));
+        accommodationDTO.setPhotos(accommodationEntity.getPhotos());
+        accommodationDTO.setCreatedAt(accommodationEntity.getCreatedAt());
+        accommodationDTO.setUpdatedAt(accommodationEntity.getUpdatedAt());
 
         accommodationDTO.setRooms(
                 accommodationEntity.getRooms()
@@ -61,6 +84,7 @@ public class AccommodationConverter {
     public RequestAccommodationDTO toDtoRequest(AccommodationEntity accommodationEntity) {
         RequestAccommodationDTO requestAccommodationDTO = new RequestAccommodationDTO();
         requestAccommodationDTO.setUuid(accommodationEntity.getUuid());
+        requestAccommodationDTO.setUuidOwner(accommodationEntity.getUuidOwner());
         requestAccommodationDTO.setName(accommodationEntity.getName());
         requestAccommodationDTO.setType(accommodationEntity.getType());
         requestAccommodationDTO.setDescription(accommodationEntity.getDescription());

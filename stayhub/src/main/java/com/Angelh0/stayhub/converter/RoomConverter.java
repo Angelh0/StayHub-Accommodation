@@ -1,8 +1,9 @@
 package com.Angelh0.stayhub.converter;
 
-import com.Angelh0.stayhub.dto.RoomAdminDTO;
-import com.Angelh0.stayhub.dto.RoomDTO;
-import com.Angelh0.stayhub.dto.SearchRoomDTO;
+import com.Angelh0.stayhub.dto.room.ResponseRoomDTO;
+import com.Angelh0.stayhub.dto.room.RoomAdminDTO;
+import com.Angelh0.stayhub.dto.room.RoomAndAccDTO;
+import com.Angelh0.stayhub.dto.room.RoomDTO;
 import com.Angelh0.stayhub.entity.RoomEntity;
 import org.springframework.stereotype.Component;
 
@@ -19,6 +20,7 @@ public class RoomConverter {
         roomEntity.setPrice(roomDTO.getPrice());
         roomEntity.setAreaInSquareMeters(roomDTO.getAreaInSquareMeters());
         roomEntity.setStatus(roomDTO.getStatus());
+        roomEntity.setPhotos(roomDTO.getPhotos());
 
         return roomEntity;
     }
@@ -26,6 +28,7 @@ public class RoomConverter {
     public RoomDTO convertEntityToDTO(RoomEntity roomEntity) {
         RoomDTO roomDTO = new RoomDTO();
         roomDTO.setUuid(roomEntity.getUuid());
+        roomDTO.setUuidOwner(roomEntity.getUuidOwner());
         roomDTO.setCity(roomEntity.getAccommodation().getCity());
         roomDTO.setRoom(roomEntity.getRoom());
         roomDTO.setCapacity(roomEntity.getCapacity());
@@ -34,7 +37,30 @@ public class RoomConverter {
         roomDTO.setPrice(roomEntity.getPrice());
         roomDTO.setAreaInSquareMeters(roomEntity.getAreaInSquareMeters());
         roomDTO.setStatus(roomEntity.getStatus());
+        roomDTO.setPhotos(roomEntity.getPhotos());
+        roomDTO.setCreatedAt(roomEntity.getCreatedAt());
+        roomDTO.setUpdatedAt(roomEntity.getUpdatedAt());
 
+        return roomDTO;
+    }
+
+    public RoomAndAccDTO convertToDTO(RoomEntity roomEntity) {
+        RoomAndAccDTO roomDTO = new RoomAndAccDTO();
+        roomDTO.setUuid(roomEntity.getUuid());
+        roomDTO.setUuidOwner(roomEntity.getUuidOwner());
+        roomDTO.setCity(roomEntity.getAccommodation().getCity());
+        roomDTO.setNameAccommodation(roomEntity.getAccommodation().getName());
+        roomDTO.setUuidAccommodation(roomEntity.getAccommodation().getUuid());
+        roomDTO.setRoom(roomEntity.getRoom());
+        roomDTO.setCapacity(roomEntity.getCapacity());
+        roomDTO.setBeds(roomEntity.getBeds());
+        roomDTO.setType(roomEntity.getType());
+        roomDTO.setPrice(roomEntity.getPrice());
+        roomDTO.setAreaInSquareMeters(roomEntity.getAreaInSquareMeters());
+        roomDTO.setStatus(roomEntity.getStatus());
+        roomDTO.setPhotos(roomEntity.getPhotos());
+        roomDTO.setCreatedAt(roomEntity.getCreatedAt());
+        roomDTO.setUpdatedAt(roomEntity.getUpdatedAt());
         return roomDTO;
     }
 
@@ -49,19 +75,26 @@ public class RoomConverter {
         roomAdminDTO.setType(roomEntity.getType());
         roomAdminDTO.setPrice(roomEntity.getPrice());
         roomAdminDTO.setAreaInSquareMeters(roomEntity.getAreaInSquareMeters());
+        roomAdminDTO.setRoomStatus(roomEntity.getRoomStatus());
         roomAdminDTO.setStatus(roomEntity.getStatus());
 
         return roomAdminDTO;
     }
 
-    public SearchRoomDTO convertToDTO(RoomEntity roomEntity) {
-        SearchRoomDTO searchRoomDTO = new SearchRoomDTO();
-        searchRoomDTO.setUuidRoom(roomEntity.getUuid());
-        searchRoomDTO.setCity(roomEntity.getAccommodation().getCity());
-        searchRoomDTO.setCapacity(roomEntity.getCapacity());
-        searchRoomDTO.setCheckOut(searchRoomDTO.getCheckOut());
-        searchRoomDTO.setCheckIn(searchRoomDTO.getCheckIn());
-
-        return searchRoomDTO;
+    public ResponseRoomDTO responseRoomToDTO(RoomEntity roomEntity) {
+        ResponseRoomDTO responseRoomDTO = new ResponseRoomDTO();
+        responseRoomDTO.setUuidOwner(roomEntity.getUuidOwner());
+        responseRoomDTO.setUuidAccommodation(roomEntity.getAccommodation().getUuid());
+        responseRoomDTO.setNameAccommodation(roomEntity.getAccommodation().getName());
+        responseRoomDTO.setUuid(roomEntity.getUuid());
+        responseRoomDTO.setCity(roomEntity.getAccommodation().getCity());
+        responseRoomDTO.setRoom(roomEntity.getRoom());
+        responseRoomDTO.setBeds(roomEntity.getBeds());
+        responseRoomDTO.setCapacity(roomEntity.getCapacity());
+        responseRoomDTO.setType(roomEntity.getType());
+        responseRoomDTO.setTotalPrice(roomEntity.getTotalPrice());
+        responseRoomDTO.setAreaInSquareMeters(roomEntity.getAreaInSquareMeters());
+        responseRoomDTO.setPhotos(roomEntity.getPhotos());
+        return responseRoomDTO;
     }
 }

@@ -1,32 +1,31 @@
 package com.Angelh0.stayhub.converter;
 
-import com.Angelh0.stayhub.dto.SearchRoomDTO;
-import com.Angelh0.stayhub.entity.SearchRoomEntity;
+import com.Angelh0.stayhub.dto.search.SearchRoomDTO;
+import com.Angelh0.stayhub.entity.RoomEntity;
+import com.Angelh0.stayhub.entity.LastSearchEntity;
 import org.springframework.stereotype.Component;
 
 @Component
 public class SearchConverter {
 
-    public SearchRoomEntity convertToEntity(SearchRoomDTO searchRoomDTO) {
-        SearchRoomEntity searchRoomEntity = new SearchRoomEntity();
-        searchRoomEntity.setSearchUuid(searchRoomDTO.getSearchUuid());
-        searchRoomEntity.setCity(searchRoomDTO.getCity());
-        searchRoomEntity.setRoom(searchRoomDTO.getRoom());
-        searchRoomEntity.setCapacity(searchRoomDTO.getCapacity());
-        searchRoomEntity.setCheckIn(searchRoomDTO.getCheckIn());
-        searchRoomEntity.setCheckOut(searchRoomDTO.getCheckOut());
+    public SearchRoomDTO convertToDTO(LastSearchEntity lastSearchEntity) {
+        SearchRoomDTO searchRoomDTO = new SearchRoomDTO();
+        searchRoomDTO.setSearchUuid(lastSearchEntity.getSearchUuid());
+        searchRoomDTO.setUuidUser(lastSearchEntity.getUuidUser());
+        searchRoomDTO.setCity(lastSearchEntity.getCity());
+        searchRoomDTO.setRoom(lastSearchEntity.getRoom());
+        searchRoomDTO.setCapacity(lastSearchEntity.getCapacity());
+        searchRoomDTO.setCheckIn(lastSearchEntity.getCheckIn());
+        searchRoomDTO.setCheckOut(lastSearchEntity.getCheckOut());
 
-        return searchRoomEntity;
+        return searchRoomDTO;
     }
 
-    public SearchRoomDTO convertToDTO(SearchRoomEntity searchRoomEntity) {
+    public SearchRoomDTO convertToDTO(RoomEntity roomEntity) {
         SearchRoomDTO searchRoomDTO = new SearchRoomDTO();
-        searchRoomDTO.setSearchUuid(searchRoomEntity.getSearchUuid());
-        searchRoomDTO.setCity(searchRoomEntity.getCity());
-        searchRoomDTO.setRoom(searchRoomEntity.getRoom());
-        searchRoomDTO.setCapacity(searchRoomEntity.getCapacity());
-        searchRoomDTO.setCheckIn(searchRoomEntity.getCheckIn());
-        searchRoomDTO.setCheckOut(searchRoomEntity.getCheckOut());
+        searchRoomDTO.setCity(roomEntity.getAccommodation().getCity());
+        searchRoomDTO.setCapacity(roomEntity.getCapacity());
+        searchRoomDTO.setRoom(roomEntity.getRoom());
 
         return searchRoomDTO;
     }
