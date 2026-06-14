@@ -2,8 +2,10 @@ package com.Angelh0.stayhub;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 @SpringBootApplication
+@EnableAsync
 public class StayhubApplication {
 
 	public static void main(String[] args) {

@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.infoUserGrpc.grpc";
+option java_outer_classname = "infoUserProto";
+
+service info {
+  rpc getInfoUser(getInfoRequest) returns (infoUserResponse);
+}
+
+message getInfoRequest{
+  string uuid = 1;
+}
+
+message infoUserResponse {
+  string uuid = 1;
+  string email = 2;
+  string firstName = 3;
+  string lastName = 4;
+}

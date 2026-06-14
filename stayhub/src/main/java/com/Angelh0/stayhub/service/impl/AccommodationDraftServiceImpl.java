@@ -1,6 +1,7 @@
 package com.Angelh0.stayhub.service.impl;
 
 import com.Angelh0.stayhub.converter.AccommodationConverter;
+import com.Angelh0.stayhub.dto.UserInfoDTO;
 import com.Angelh0.stayhub.dto.accommodation.AccommodationDTO;
 import com.Angelh0.stayhub.entity.AccommodationCalendarEntity;
 import com.Angelh0.stayhub.entity.AccommodationDraftEntity;
@@ -9,11 +10,14 @@ import com.Angelh0.stayhub.entity.LastSearchEntity;
 import com.Angelh0.stayhub.enums.AccommodationEnums.AccommodationStatus;
 import com.Angelh0.stayhub.exception.InvalidValues;
 import com.Angelh0.stayhub.exception.NotFoundException;
+import com.Angelh0.stayhub.grpcClient.GrpcClientInfoUser;
 import com.Angelh0.stayhub.repository.AccommodationCalendarRepository;
 import com.Angelh0.stayhub.repository.AccommodationDraftRepository;
 import com.Angelh0.stayhub.repository.AccommodationRepository;
 import com.Angelh0.stayhub.repository.SearchRoomRepository;
 import com.Angelh0.stayhub.service.AccommodationDraftService;
+import com.Angelh0.stayhub.service.EmailService;
+import com.Angelh0.stayhub.util.EmailTemplates;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -30,19 +34,25 @@ public class AccommodationDraftServiceImpl implements AccommodationDraftService 
     private final AccommodationConverter accommodationConverter;
     private final AccommodationCalendarRepository accommodationCalendarRepository;
     private final SearchRoomRepository searchRoomRepository;
+    private final EmailService emailService;
+    private final GrpcClientInfoUser grpcClientInfoUser;
 
-    public AccommodationDraftServiceImpl(AccommodationRepository accommodationRepository, AccommodationDraftRepository accommodationDraftRepository, AccommodationConverter accommodationConverter, AccommodationCalendarRepository accommodationCalendarRepository, SearchRoomRepository searchRoomRepository) {
+    public AccommodationDraftServiceImpl(AccommodationRepository accommodationRepository, AccommodationDraftRepository accommodationDraftRepository, AccommodationConverter accommodationConverter, AccommodationCalendarRepository accommodationCalendarRepository, SearchRoomRepository searchRoomRepository, EmailService emailService, GrpcClientInfoUser grpcClientInfoUser) {
         this.accommodationRepository = accommodationRepository;
         this.accommodationDraftRepository = accommodationDraftRepository;
         this.accommodationConverter = accommodationConverter;
         this.accommodationCalendarRepository = accommodationCalendarRepository;
         this.searchRoomRepository = searchRoomRepository;
+        this.emailService = emailService;
+        this.grpcClientInfoUser = grpcClientInfoUser;
     }
 
     @Override
     public boolean checkBasicCreate(UUID uuidAccommodation) {
 
         Optional<AccommodationEntity> accommodation = accommodationRepository.findByUuid(uuidAccommodation);
+
+        boolean isNewDraft = false;
 
         if (accommodation.isEmpty()) {
             return false;
@@ -56,10 +66,28 @@ public class AccommodationDraftServiceImpl implements AccommodationDraftService 
             accommodationDraft = new AccommodationDraftEntity();
             accommodationDraft.setAccommodation(accommodationEntity);
             accommodationEntity.setDraft(accommodationDraft);
+            isNewDraft = true;
         }
 
         accommodationDraft.setBasicCreate(true);
         accommodationDraftRepository.save(accommodationDraft);
+
+        if (isNewDraft) {
+            String accommodationName = accommodationEntity.getName();
+
+
+            UserInfoDTO ownerInfo = grpcClientInfoUser.getInfoUser(accommodationEntity.getUuidOwner());
+
+            String name = ownerInfo.getFirstName().trim().split("\\s+")[0];
+            String lastName = ownerInfo.getLastName().trim().split("\\s+")[0];
+
+            String to = ownerInfo.getEmail();
+            String ownerName = name + " " + lastName;
+
+            String html = EmailTemplates.templateAccommodationDraft(accommodationName, ownerName);
+            emailService.sendEmailHtml(to, "StayHub - Tu alojamiento ha sido creado como borrador", html);
+        }
+
         return true;
     }
 
@@ -226,6 +254,21 @@ public class AccommodationDraftServiceImpl implements AccommodationDraftService 
                 accommodationDraft.setPublish(true);
                 accommodationDraftRepository.save(accommodationDraft);
                 accommodationEntity.setStatus(AccommodationStatus.Active);
+
+                try{
+                    UserInfoDTO userInfoDTO = grpcClientInfoUser.getInfoUser(accommodationEntity.getUuidOwner());
+
+                    String name = userInfoDTO.getFirstName().trim().split("\\s+")[0];
+                    String lastName = userInfoDTO.getLastName().trim().split("\\s+")[0];
+
+                    String to = userInfoDTO.getEmail();
+                    String ownerName = name + " " + lastName;
+
+                    String html = EmailTemplates.templateAccommodationCreated(accommodationEntity.getName(), ownerName);
+                    emailService.sendEmailHtml(to, "StayHub - Tu alojamiento se ha creado correctamente", html);
+                } catch (Exception e) {
+                    System.err.println("El alojamiento ha sido publicado pero no se ha enviado el correo al usuario: " +e.getMessage());
+                }
 
                 accommodationRepository.save(accommodationEntity);
             }
